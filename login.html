@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summit Accounting — Client Portal Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1a2e4a; --blue: #2563eb; --gray-200: #e5e7eb;
+      --gray-400: #9ca3af; --gray-600: #4b5563; --gray-800: #1f2937;
+      --red: #dc2626; --red-light: #fef2f2; --white: #fff; --radius: 8px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3a5f 100%);
+      min-height: 100vh; display: grid; place-items: center; padding: 1rem;
+    }
+    .card {
+      background: var(--white); border-radius: 16px;
+      padding: 2.5rem 2rem; width: 100%; max-width: 380px;
+      box-shadow: 0 25px 50px rgba(0,0,0,.35);
+    }
+    .logo { text-align: center; margin-bottom: 2rem; }
+    .logo-text { font-size: 1.3rem; font-weight: 800; color: var(--navy); }
+    .logo-text span { color: var(--blue); }
+    .logo-sub { font-size: .85rem; color: var(--gray-400); margin-top: .25rem; }
+    h1 { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: .35rem; }
+    .subtitle { font-size: .88rem; color: var(--gray-600); margin-bottom: 1.75rem; }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+    .form-group label { font-size: .82rem; font-weight: 600; color: var(--gray-800); }
+    .form-group input {
+      padding: .65rem .9rem; border: 1px solid var(--gray-200); border-radius: var(--radius);
+      font-size: .95rem; font-family: inherit; color: var(--gray-800); outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .error-msg {
+      background: var(--red-light); color: var(--red);
+      border: 1px solid #fecaca; border-radius: var(--radius);
+      padding: .6rem .85rem; font-size: .85rem; margin-bottom: 1rem; display: none;
+    }
+    .error-msg.visible { display: block; }
+    .btn-login {
+      width: 100%; padding: .75rem; background: var(--blue); color: var(--white);
+      border: none; border-radius: var(--radius); font-size: .95rem;
+      font-weight: 700; cursor: pointer; transition: background .2s; margin-top: .25rem;
+    }
+    .btn-login:hover { background: #1d4ed8; }
+    .btn-login:active { transform: scale(.99); }
+    .back-link { text-align: center; margin-top: 1.5rem; font-size: .85rem; color: var(--gray-400); }
+    .back-link a { color: var(--blue); font-weight: 600; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-text">Summit <span>Accounting</span></div>
+      <div class="logo-sub">Client Portal</div>
+    </div>
+
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to access your client dashboard.</p>
+
+    <div class="error-msg" id="error-msg">Incorrect username or password. Please try again.</div>
+
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter your username" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+    </div>
+
+    <button class="btn-login" onclick="attemptLogin()">Sign in</button>
+
+    <div class="back-link"><a href="index.html">← Back to website</a></div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    if (sessionStorage.getItem('summit_user')) location.replace('crm.html');
+
+    const CREDENTIALS = { username: 'itsyaku', password: 'test123' };
+
+    function attemptLogin() {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      const err = document.getElementById('error-msg');
+
+      if (u === CREDENTIALS.username && p === CREDENTIALS.password) {
+        sessionStorage.setItem('summit_user', u);
+        location.replace('crm.html');
+      } else {
+        err.classList.add('visible');
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') attemptLogin();
+    });
+
+    document.getElementById('username').focus();
+  </script>
+</body>
+</html>

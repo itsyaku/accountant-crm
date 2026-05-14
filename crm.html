@@ -13,7 +13,9 @@
     <div class="topbar-logo">Summit <span>Accounting</span> &mdash; <span style="font-weight:400;color:#94a3b8;font-size:.95rem;">Client Portal</span></div>
     <div class="topbar-right">
       <span class="topbar-badge" id="client-count-badge">0 clients</span>
+      <span style="color:#94a3b8;font-size:.9rem;">👤 <span id="topbar-username"></span></span>
       <a href="index.html">← Back to website</a>
+      <a href="#" onclick="logout()" style="color:#f87171;">Log out</a>
     </div>
   </div>
 
@@ -101,6 +103,13 @@
     </div>
   </div>
 
+  <script>
+    // Auth guard — redirect to login if no session
+    const _user = sessionStorage.getItem('summit_user');
+    if (!_user) { location.replace('login.html'); }
+    else { document.getElementById('topbar-username').textContent = _user; }
+    function logout() { sessionStorage.removeItem('summit_user'); location.replace('login.html'); }
+  </script>
   <script src="crm.js"></script>
 </body>
 </html>

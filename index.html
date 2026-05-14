@@ -15,7 +15,7 @@
       <li><a href="#services">Services</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="crm.html" class="btn-portal">Client Portal</a></li>
+      <li><a href="login.html" class="btn-portal">Client Portal</a></li>
     </ul>
   </nav>
 
@@ -175,6 +175,13 @@
     <p><strong>Summit Accounting</strong> &mdash; 14 Bree Street, Cape Town &mdash; +27 21 555 0190</p>
     <p style="margin-top:.5rem">© 2026 Summit Accounting. All rights reserved.</p>
   </footer>
+
+  <script>
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+  </script>
 
 </body>
 </html>

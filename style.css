@@ -28,6 +28,13 @@ nav {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 5%; height: 68px;
   box-shadow: var(--shadow-md);
+  transition: background .35s ease, box-shadow .35s ease;
+}
+nav.scrolled {
+  background: rgba(26, 46, 74, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 2px 24px rgba(0,0,0,.28);
 }
 .nav-logo { color: var(--white); font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
 .nav-logo span { color: #60a5fa; }
