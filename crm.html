@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summit Accounting — Client Portal</title>
+  <link rel="stylesheet" href="crm.css" />
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">Summit <span>Accounting</span> &mdash; <span style="font-weight:400;color:#94a3b8;font-size:.95rem;">Client Portal</span></div>
+    <div class="topbar-right">
+      <span class="topbar-badge" id="client-count-badge">0 clients</span>
+      <a href="index.html">← Back to website</a>
+    </div>
+  </div>
+
+  <!-- CRM BODY -->
+  <div class="crm-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Clients</h2>
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search clients…" oninput="filterClients(this.value)" />
+        </div>
+        <button class="btn-add" onclick="openModal()">＋ Add client</button>
+      </div>
+      <div class="client-list" id="client-list"></div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" id="main">
+      <div class="empty-state" id="empty-state">
+        <div>
+          <div class="empty-state-icon">👤</div>
+          <h3>Select a client</h3>
+          <p>Choose a client from the list or add a new one.</p>
+        </div>
+      </div>
+      <div class="client-detail" id="client-detail" style="display:none;"></div>
+    </main>
+
+  </div>
+
+  <!-- ADD/EDIT MODAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal">
+      <h2 id="modal-title">Add new client</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>First name *</label>
+          <input type="text" id="f-first" placeholder="Jane" />
+        </div>
+        <div class="form-group">
+          <label>Last name *</label>
+          <input type="text" id="f-last" placeholder="Smith" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Company</label>
+        <input type="text" id="f-company" placeholder="Smith Holdings (Pty) Ltd" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="f-email" placeholder="jane@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="f-phone" placeholder="+27 82 000 0000" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Service</label>
+          <select id="f-service">
+            <option value="">Select…</option>
+            <option>Tax Planning</option>
+            <option>Bookkeeping</option>
+            <option>Payroll</option>
+            <option>Business Advisory</option>
+            <option>Multiple services</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="saveClient()">Save client</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="crm.js"></script>
+</body>
+</html>
