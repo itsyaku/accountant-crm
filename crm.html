@@ -103,14 +103,28 @@
     </div>
   </div>
 
-  <script>
-    // Auth guard — redirect to login if no session
-    const _user = sessionStorage.getItem('summit_user');
-    if (!_user) { location.replace('login.html'); }
-    else { document.getElementById('topbar-username').textContent = _user; }
-    function logout() { sessionStorage.removeItem('summit_user'); location.replace('login.html'); }
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const _sb = supabase.createClient(
+      'https://jlcjdhzdcuwwibqmyfcy.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k'
+    );
+    (async function() {
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) { location.replace('login.html'); return; }
+      const { data: profile } = await _sb
+        .from('profiles')
+        .select('full_name')
+        .eq('id', session.user.id)
+        .single();
+      document.getElementById('topbar-username').textContent =
+        (profile && profile.full_name) || session.user.email;
+    }());
+    async function logout() {
+      await _sb.auth.signOut();
+      location.replace('login.html');
+    }
+  </script>
   <script src="crm.js"></script>
 </body>
 </html>

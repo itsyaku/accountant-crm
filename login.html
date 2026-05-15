@@ -19,6 +19,8 @@
       --gray-800: #1f2937;
       --red: #dc2626;
       --red-light: #fef2f2;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
       --white: #fff;
       --radius: 8px;
     }
@@ -125,6 +127,9 @@
       padding: 3rem 2.5rem 2rem;
     }
 
+    .view { display: flex; flex-direction: column; flex: 1; }
+    .view.hidden { display: none !important; }
+
     .signin-header h2 {
       font-size: 1.65rem;
       font-weight: 800;
@@ -138,19 +143,27 @@
       margin-bottom: 2rem;
     }
 
-    .error-msg {
-      background: var(--red-light);
-      color: var(--red);
-      border: 1px solid #fecaca;
+    .alert-msg {
       border-radius: var(--radius);
       padding: 0.6rem 0.85rem;
       font-size: 0.85rem;
       margin-bottom: 1rem;
       display: none;
+      line-height: 1.45;
     }
-    .error-msg.visible { display: block; }
+    .alert-msg.visible { display: block; }
+    .alert-msg.error   { background: var(--red-light);   color: var(--red);   border: 1px solid #fecaca; }
+    .alert-msg.success { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
 
     .form-group { margin-bottom: 0.85rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 0.35rem;
+    }
 
     .form-group input {
       width: 100%;
@@ -170,8 +183,9 @@
     }
 
     .form-group input::placeholder { color: var(--gray-400); }
+    .form-group input:disabled { background: #f9fafb; }
 
-    .btn-login {
+    .btn-primary {
       width: 100%;
       padding: 0.8rem;
       margin-top: 0.5rem;
@@ -182,53 +196,61 @@
       font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, opacity 0.2s;
+      font-family: inherit;
     }
 
-    .btn-login:hover { background: #243a5c; }
-    .btn-login:active { transform: scale(0.99); }
+    .btn-primary:hover:not(:disabled) { background: #243a5c; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .divider {
       border: none;
       border-top: 1px solid var(--gray-200);
-      margin: 2rem 0 1.25rem;
+      margin: 1.75rem 0 1.25rem;
     }
 
-    .demo-label {
-      font-size: 0.7rem;
+    .switch-link {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+      text-align: center;
+    }
+    .switch-link a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .switch-link a:hover { text-decoration: underline; }
+
+    /* ── Onboarding ── */
+    .onboard-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #eff6ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      width: fit-content;
+    }
+
+    .fields-label {
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       color: var(--gray-400);
-      margin-bottom: 0.75rem;
+      margin: 1.25rem 0 0.75rem;
     }
 
-    .btn-demo {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.7rem 1rem;
-      margin-bottom: 0.5rem;
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--gray-800);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      font-family: inherit;
-      text-align: left;
-    }
+    .required-star { color: var(--red); }
 
-    .btn-demo:hover {
-      border-color: var(--gray-400);
-      background: #f9fafb;
-    }
-
-    .btn-demo .demo-icon { font-size: 1rem; opacity: 0.85; }
-
+    /* ── Footer ── */
     .panel-footer {
       margin-top: auto;
       padding-top: 2rem;
@@ -248,19 +270,9 @@
 
     @media (max-width: 900px) {
       body { flex-direction: column; }
-      .panel-left {
-        min-height: auto;
-        padding: 2.5rem 1.75rem;
-      }
-      .panel-right {
-        max-width: none;
-        min-height: auto;
-        padding: 2.5rem 1.75rem 2rem;
-      }
-      .feature-grid {
-        grid-template-columns: 1fr;
-        margin-top: 2rem;
-      }
+      .panel-left { min-height: auto; padding: 2.5rem 1.75rem; }
+      .panel-right { max-width: none; min-height: auto; padding: 2.5rem 1.75rem 2rem; }
+      .feature-grid { grid-template-columns: 1fr; margin-top: 2rem; }
       .panel-hero { justify-content: flex-start; }
     }
   </style>
@@ -305,78 +317,282 @@
   </aside>
 
   <main class="panel-right">
-    <div class="signin-header">
-      <h2>Sign In</h2>
-      <p>Access your YAKU Accounting client dashboard</p>
+
+    <!-- ── VIEW: SIGN IN ── -->
+    <div class="view" id="view-signin">
+      <div class="signin-header">
+        <h2>Sign In</h2>
+        <p>Access your YAKU Accounting client dashboard</p>
+      </div>
+      <div class="alert-msg error"   id="signin-error"></div>
+      <div class="alert-msg success" id="signin-success"></div>
+      <div class="form-group">
+        <label for="signin-email">Email address</label>
+        <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="signin-password">Password</label>
+        <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" id="btn-signin" data-label="Sign In to Client Portal">
+        Sign In to Client Portal
+      </button>
+      <hr class="divider" />
+      <p class="switch-link">
+        First time here? <a href="#" id="go-register">Create your account</a>
+      </p>
+      <footer class="panel-footer">
+        YAKU Accounting — Client Portal<br />
+        <a href="index.html">← Back to website</a>
+      </footer>
     </div>
 
-    <div class="error-msg" id="error-msg">Incorrect username or password. Please try again.</div>
-
-    <div class="form-group">
-      <input type="text" id="username" placeholder="Username" autocomplete="username" />
+    <!-- ── VIEW: REGISTER ── -->
+    <div class="view hidden" id="view-register">
+      <div class="signin-header">
+        <h2>Create Account</h2>
+        <p>Set up access to your YAKU Accounting client portal</p>
+      </div>
+      <div class="alert-msg error" id="register-error"></div>
+      <div class="form-group">
+        <label for="reg-email">Email address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" placeholder="Min. 8 characters" autocomplete="new-password" />
+      </div>
+      <div class="form-group">
+        <label for="reg-confirm">Confirm password</label>
+        <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" />
+      </div>
+      <button class="btn-primary" id="btn-register" data-label="Create Account">
+        Create Account
+      </button>
+      <hr class="divider" />
+      <p class="switch-link">
+        Already have an account? <a href="#" id="go-signin">Sign in</a>
+      </p>
+      <footer class="panel-footer">
+        YAKU Accounting — Client Portal<br />
+        <a href="index.html">← Back to website</a>
+      </footer>
     </div>
-    <div class="form-group">
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+
+    <!-- ── VIEW: ONBOARDING ── -->
+    <div class="view hidden" id="view-onboarding">
+      <span class="onboard-badge">New client setup</span>
+      <div class="signin-header">
+        <h2>Welcome aboard!</h2>
+        <p>Complete your profile to access the client portal</p>
+      </div>
+      <div class="alert-msg error" id="onboard-error"></div>
+      <p class="fields-label">Your details</p>
+      <div class="form-group">
+        <label for="onboard-name">
+          Full name <span class="required-star">*</span>
+        </label>
+        <input type="text" id="onboard-name" placeholder="Jane Smith" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="onboard-company">Company name</label>
+        <input type="text" id="onboard-company" placeholder="Smith Holdings (Pty) Ltd" autocomplete="organization" />
+      </div>
+      <div class="form-group">
+        <label for="onboard-phone">Phone number</label>
+        <input type="tel" id="onboard-phone" placeholder="+27 82 000 0000" autocomplete="tel" />
+      </div>
+      <button class="btn-primary" id="btn-onboard" data-label="Complete Setup & Enter Portal">
+        Complete Setup &amp; Enter Portal
+      </button>
+      <footer class="panel-footer">
+        YAKU Accounting — Client Portal<br />
+        <a href="index.html">← Back to website</a>
+      </footer>
     </div>
 
-    <button class="btn-login" onclick="attemptLogin()">Sign In to Client Portal</button>
-
-    <hr class="divider" />
-
-    <p class="demo-label">Demo — sign in as</p>
-    <button type="button" class="btn-demo" onclick="demoLogin('itsyaku')">
-      <span class="demo-icon" aria-hidden="true">👤</span>
-      Demo Client — Full portal access
-    </button>
-    <button type="button" class="btn-demo" onclick="demoLogin('viewer')">
-      <span class="demo-icon" aria-hidden="true">👁</span>
-      Viewer — Read-only access
-    </button>
-
-    <footer class="panel-footer">
-      YAKU Accounting — Client Portal v1.0<br />
-      <a href="index.html">← Back to website</a>
-    </footer>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    if (sessionStorage.getItem('summit_user')) location.replace('crm.html');
+    const SUPA_URL = 'https://jlcjdhzdcuwwibqmyfcy.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k';
+    const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-    const CREDENTIALS = { username: 'itsyaku', password: 'test123' };
+    // ── Utilities ─────────────────────────────────────────────────────────────
 
-    function attemptLogin() {
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value;
-      const err = document.getElementById('error-msg');
+    function showView(name) {
+      ['signin', 'register', 'onboarding'].forEach(v => {
+        document.getElementById('view-' + v).classList.toggle('hidden', v !== name);
+      });
+    }
 
-      if (u === CREDENTIALS.username && p === CREDENTIALS.password) {
-        sessionStorage.setItem('summit_user', u);
+    function setAlert(id, msg, type) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = 'alert-msg ' + (type || 'error') + ' visible';
+    }
+
+    function clearAlerts() {
+      Array.from(arguments).forEach(function(id) {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('visible');
+      });
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Please wait…' : btn.dataset.label;
+    }
+
+    // ── Auth helpers ──────────────────────────────────────────────────────────
+
+    async function checkOnboarding(user) {
+      const { data: profile } = await sb
+        .from('profiles')
+        .select('onboarding_complete')
+        .eq('id', user.id)
+        .single();
+      if (profile && profile.onboarding_complete) {
         location.replace('crm.html');
       } else {
-        err.classList.add('visible');
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
+        showView('onboarding');
       }
     }
 
-    function demoLogin(role) {
-      document.getElementById('error-msg').classList.remove('visible');
-      if (role === 'itsyaku') {
-        document.getElementById('username').value = CREDENTIALS.username;
-        document.getElementById('password').value = CREDENTIALS.password;
-        attemptLogin();
-      } else {
-        document.getElementById('username').value = 'viewer';
-        document.getElementById('password').value = 'viewer';
-        attemptLogin();
-      }
-    }
+    // ── Init: check for an existing session on page load ──────────────────────
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') attemptLogin();
+    (async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) { await checkOnboarding(session.user); return; }
+
+      // Handles email-confirmation redirects (Supabase puts tokens in the URL hash)
+      sb.auth.onAuthStateChange(async function(event, session) {
+        if (event === 'SIGNED_IN' && session) await checkOnboarding(session.user);
+      });
+
+      document.getElementById('signin-email').focus();
+    }());
+
+    // ── Navigation ────────────────────────────────────────────────────────────
+
+    document.getElementById('go-register').addEventListener('click', function(e) {
+      e.preventDefault();
+      clearAlerts('signin-error', 'signin-success');
+      showView('register');
+      document.getElementById('reg-email').focus();
     });
 
-    document.getElementById('username').focus();
+    document.getElementById('go-signin').addEventListener('click', function(e) {
+      e.preventDefault();
+      clearAlerts('register-error');
+      showView('signin');
+      document.getElementById('signin-email').focus();
+    });
+
+    // ── Sign In ───────────────────────────────────────────────────────────────
+
+    async function doSignIn() {
+      clearAlerts('signin-error', 'signin-success');
+      const email    = document.getElementById('signin-email').value.trim();
+      const password = document.getElementById('signin-password').value;
+      if (!email || !password) {
+        setAlert('signin-error', 'Please enter your email and password.');
+        return;
+      }
+      setLoading('btn-signin', true);
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      setLoading('btn-signin', false);
+      if (error) { setAlert('signin-error', error.message); return; }
+      await checkOnboarding(data.user);
+    }
+
+    document.getElementById('btn-signin').addEventListener('click', doSignIn);
+    document.getElementById('signin-password').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doSignIn();
+    });
+
+    // ── Register ──────────────────────────────────────────────────────────────
+
+    async function doRegister() {
+      clearAlerts('register-error');
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+      if (!email || !password || !confirm) {
+        setAlert('register-error', 'Please fill in all fields.');
+        return;
+      }
+      if (password.length < 8) {
+        setAlert('register-error', 'Password must be at least 8 characters.');
+        return;
+      }
+      if (password !== confirm) {
+        setAlert('register-error', 'Passwords do not match.');
+        return;
+      }
+      setLoading('btn-register', true);
+      const { data, error } = await sb.auth.signUp({ email, password });
+      setLoading('btn-register', false);
+      if (error) { setAlert('register-error', error.message); return; }
+
+      if (data.session) {
+        // Email confirmation is disabled — go straight to onboarding
+        showView('onboarding');
+        document.getElementById('onboard-name').focus();
+      } else {
+        // Email confirmation required — tell the user and send them to sign-in
+        showView('signin');
+        setAlert(
+          'signin-success',
+          'Account created! Check your email to confirm your address, then sign in here.',
+          'success'
+        );
+      }
+    }
+
+    document.getElementById('btn-register').addEventListener('click', doRegister);
+    document.getElementById('reg-confirm').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doRegister();
+    });
+
+    // ── Onboarding ────────────────────────────────────────────────────────────
+
+    document.getElementById('btn-onboard').addEventListener('click', async function() {
+      clearAlerts('onboard-error');
+      const fullName = document.getElementById('onboard-name').value.trim();
+      const company  = document.getElementById('onboard-company').value.trim();
+      const phone    = document.getElementById('onboard-phone').value.trim();
+
+      if (!fullName) {
+        setAlert('onboard-error', 'Full name is required.');
+        document.getElementById('onboard-name').focus();
+        return;
+      }
+
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        setAlert('onboard-error', 'Your session has expired. Please sign in again.');
+        showView('signin');
+        return;
+      }
+
+      setLoading('btn-onboard', true);
+      const { error } = await sb.from('profiles').upsert({
+        id:                  user.id,
+        role:                'client',
+        full_name:           fullName,
+        company_name:        company  || null,
+        phone:               phone    || null,
+        onboarding_complete: true,
+      });
+      setLoading('btn-onboard', false);
+
+      if (error) { setAlert('onboard-error', error.message); return; }
+      location.replace('crm.html');
+    });
   </script>
 </body>
 </html>
