@@ -32,6 +32,13 @@
         <button class="btn-add" onclick="openModal()">＋ Add client</button>
       </div>
       <div class="client-list" id="client-list"></div>
+      <!-- Admin section — shown only to admin role users -->
+      <div class="admin-section" id="admin-section" style="display:none">
+        <div class="admin-section-label">Admin</div>
+        <button class="admin-nav-btn" id="nav-users-btn" onclick="showUsersPanel()">
+          👥 Manage Users
+        </button>
+      </div>
     </aside>
 
     <!-- MAIN -->
@@ -44,6 +51,22 @@
         </div>
       </div>
       <div class="client-detail" id="client-detail" style="display:none;"></div>
+
+      <!-- Users management panel — admin only -->
+      <div class="users-panel" id="users-panel" style="display:none">
+        <div class="detail-header">
+          <div class="detail-header-left">
+            <div class="detail-avatar-lg" style="background:var(--blue);font-size:1.3rem">👥</div>
+            <div>
+              <div class="detail-name">User Management</div>
+              <div class="detail-meta">View accounts and manage roles — admin access only</div>
+            </div>
+          </div>
+        </div>
+        <div class="users-body">
+          <div id="users-list"></div>
+        </div>
+      </div>
     </main>
 
   </div>
@@ -109,6 +132,7 @@
       'https://jlcjdhzdcuwwibqmyfcy.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k'
     );
+    let _currentUserId = null;
     (async function() {
       const { data: { session } } = await _sb.auth.getSession();
       if (!session) { location.replace('login.html'); return; }
@@ -118,13 +142,114 @@
         .eq('id', session.user.id)
         .single();
       if (profile && profile.role === 'client') { location.replace('client-portal.html'); return; }
+      _currentUserId = session.user.id;
       document.getElementById('topbar-username').textContent =
         (profile && profile.full_name) || session.user.email;
+      if (profile && profile.role === 'admin') {
+        document.getElementById('admin-section').style.display = '';
+      }
     }());
     async function logout() {
       await _sb.auth.signOut();
       location.replace('login.html');
     }
+
+    // ── User Management (admin only) ──────────────────────────────────────────
+    function showUsersPanel() {
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('client-detail').style.display = 'none';
+      document.getElementById('users-panel').style.display = 'flex';
+      document.getElementById('nav-users-btn').classList.add('active');
+      if (typeof activeId !== 'undefined') { activeId = null; renderSidebar(); }
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      const container = document.getElementById('users-list');
+      container.innerHTML = '<p style="color:var(--gray-400);padding:2rem 1.5rem">Loading users…</p>';
+      const { data, error } = await _sb.rpc('get_all_users_for_admin');
+      if (error) {
+        container.innerHTML = `<p style="color:var(--red);padding:2rem 1.5rem">Error: ${escUH(error.message)}</p>`;
+        return;
+      }
+      renderUsers(data || []);
+    }
+
+    function renderUsers(users) {
+      const container = document.getElementById('users-list');
+      if (users.length === 0) {
+        container.innerHTML = '<p style="color:var(--gray-400);padding:2rem 1.5rem">No users found.</p>';
+        return;
+      }
+      const rows = users.map(u => {
+        const name = u.full_name || u.email;
+        const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        const isMe = u.id === _currentUserId;
+        return `
+          <tr id="urow-${u.id}">
+            <td>
+              <div class="user-row-info">
+                <div class="user-row-avatar">${escUH(initials)}</div>
+                <div>
+                  <div class="user-row-name">${escUH(name)}${isMe ? ' <span class="you-tag">You</span>' : ''}</div>
+                  <div class="user-row-email">${escUH(u.email)}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <select
+                class="role-select role-${u.role}"
+                id="role-sel-${u.id}"
+                data-prev="${u.role}"
+                ${isMe ? 'disabled title="Cannot change your own role"' : ''}
+                onchange="changeUserRole('${u.id}', this)"
+              >
+                <option value="client" ${u.role === 'client' ? 'selected' : ''}>Client</option>
+                <option value="admin"  ${u.role === 'admin'  ? 'selected' : ''}>Admin</option>
+              </select>
+            </td>
+            <td>
+              <span class="onboarding-badge ${u.onboarding_complete ? 'badge-complete' : 'badge-pending'}">
+                ${u.onboarding_complete ? 'Active' : 'Pending'}
+              </span>
+            </td>
+            <td class="user-joined">${fmtUserDate(u.created_at)}</td>
+          </tr>`;
+      }).join('');
+      container.innerHTML = `
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th style="width:130px">Role</th>
+              <th style="width:110px">Status</th>
+              <th style="width:120px">Joined</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    async function changeUserRole(userId, sel) {
+      const newRole  = sel.value;
+      const prevRole = sel.dataset.prev;
+      sel.disabled = true;
+      const { error } = await _sb.from('profiles').update({ role: newRole }).eq('id', userId);
+      if (error) {
+        sel.value = prevRole;
+        sel.disabled = false;
+        alert('Failed to update role: ' + error.message);
+        return;
+      }
+      sel.dataset.prev = newRole;
+      sel.className = `role-select role-${newRole}`;
+      sel.disabled = false;
+      const row = document.getElementById('urow-' + userId);
+      if (row) { row.style.background = '#f0fdf4'; setTimeout(() => row.style.background = '', 1500); }
+    }
+
+    function escUH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtUserDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'}); }
   </script>
   <script src="crm.js"></script>
 </body>

@@ -84,6 +84,9 @@ function renderSidebar() {
 function renderMain() {
   const emptyEl = document.getElementById('empty-state');
   const detailEl = document.getElementById('client-detail');
+  const usersEl = document.getElementById('users-panel');
+  if (usersEl) usersEl.style.display = 'none';
+  document.getElementById('nav-users-btn')?.classList.remove('active');
 
   const client = clients.find(c => c.id === activeId);
   if (!client) {

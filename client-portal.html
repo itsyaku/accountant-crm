@@ -762,12 +762,12 @@
         <tr>
           <td>
             <span class="doc-name">
-              <span class="doc-icon">${fileIcon(d.file_name)}</span>
-              ${escHtml(d.file_name)}
+              <span class="doc-icon">${fileIcon(d.name)}</span>
+              ${escHtml(d.name)}
             </span>
           </td>
-          <td class="doc-size">${formatBytes(d.file_size || 0)}</td>
-          <td class="doc-date">${formatDate(d.created_at)}</td>
+          <td class="doc-size">${formatBytes(d.size || 0)}</td>
+          <td class="doc-date">${formatDate(d.uploaded_at)}</td>
           <td>
             <div class="doc-actions">
               <button class="btn btn-outline btn-sm" onclick="downloadDoc('${d.storage_path}', '${escHtml(d.file_name)}')">↓ Download</button>
@@ -821,9 +821,9 @@
 
       const { error: dbErr } = await sb.from('documents').insert({
         client_id:    currentUser.id,
-        file_name:    file.name,
-        file_size:    file.size,
-        file_type:    file.type,
+        name:         file.name,
+        size:         file.size,
+        mime_type:    file.type,
         storage_path: storagePath,
       });
 
@@ -920,7 +920,7 @@
       container.innerHTML = procs.map(p => `
         <div class="process-card">
           <div class="process-info">
-            <div class="process-name">${escHtml(p.name)}</div>
+            <div class="process-name">${escHtml(p.title)}</div>
             ${p.description ? `<div class="process-desc">${escHtml(p.description)}</div>` : ''}
             <div class="process-meta">Started: ${formatDateShort(p.created_at)}</div>
           </div>
