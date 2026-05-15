@@ -114,9 +114,10 @@
       if (!session) { location.replace('login.html'); return; }
       const { data: profile } = await _sb
         .from('profiles')
-        .select('full_name')
+        .select('full_name, role')
         .eq('id', session.user.id)
         .single();
+      if (profile && profile.role === 'client') { location.replace('client-portal.html'); return; }
       document.getElementById('topbar-username').textContent =
         (profile && profile.full_name) || session.user.email;
     }());

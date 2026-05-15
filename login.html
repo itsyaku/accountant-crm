@@ -986,11 +986,11 @@
     async function checkOnboarding(user) {
       const { data: profile } = await sb
         .from('profiles')
-        .select('onboarding_complete')
+        .select('onboarding_complete, role')
         .eq('id', user.id)
         .single();
       if (profile && profile.onboarding_complete) {
-        location.replace('crm.html');
+        location.replace(profile.role === 'client' ? 'client-portal.html' : 'crm.html');
       } else {
         showView('onboarding');
       }
@@ -1122,7 +1122,7 @@
       setLoading('btn-onboard', false);
 
       if (error) { setAlert('onboard-error', error.message); return; }
-      location.replace('crm.html');
+      location.replace('client-portal.html');
     });
   </script>
 </body>

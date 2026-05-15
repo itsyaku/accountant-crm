@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAKU Accounting — Client Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #08080f;
+      --surface:   #0d0d1a;
+      --surface2:  #12122b;
+      --border:    #1e2040;
+      --gold:      #c9923a;
+      --gold-dim:  #8a6025;
+      --cyan:      #00cfff;
+      --cyan-dim:  #005f78;
+      --red:       #ff4455;
+      --green:     #00e5a0;
+      --text:      #c8cfe8;
+      --text-dim:  #5a6080;
+      --white:     #eef2ff;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* ── Scanline overlay ── */
+    body::before {
+      content: '';
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,.08) 2px,
+        rgba(0,0,0,.08) 4px
+      );
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(8,8,15,.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 100;
+    }
+
+    .topbar-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .2em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .topbar-logo span { color: var(--text-dim); font-weight: 400; }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: .75rem;
+      letter-spacing: .05em;
+    }
+
+    .topbar-right .user-chip {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--cyan);
+    }
+
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--cyan-dim);
+      border: 1px solid var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .6rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .topbar-right a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color .2s;
+      letter-spacing: .05em;
+    }
+
+    .topbar-right a:hover { color: var(--text); }
+    .topbar-right a.logout { color: var(--red); }
+    .topbar-right a.logout:hover { color: #ff6677; }
+
+    /* ── Layout ── */
+    .portal-body {
+      margin-top: 56px;
+      min-height: calc(100vh - 56px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Tab nav ── */
+    .tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .tab-btn {
+      padding: .9rem 1.5rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      transition: color .2s, border-color .2s;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+    }
+
+    /* ── Tab content ── */
+    .tab-content {
+      flex: 1;
+      padding: 2.5rem 2rem;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Section heading ── */
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .section-heading h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .section-heading .tag {
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: .2rem .5rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .6rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .form-group input,
+    .form-group select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: .65rem .85rem;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: .8rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--cyan);
+    }
+
+    .form-group input[readonly] {
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .65rem 1.4rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      transition: all .2s;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #08080f;
+    }
+
+    .btn-primary:hover { background: #daa84d; }
+    .btn-primary:disabled { background: var(--gold-dim); cursor: not-allowed; opacity: .6; }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+    }
+
+    .btn-outline:hover { background: rgba(0,207,255,.07); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+
+    .btn-danger:hover { background: rgba(255,68,85,.08); }
+
+    .btn-sm {
+      padding: .35rem .8rem;
+      font-size: .6rem;
+    }
+
+    /* ── Alert ── */
+    .alert {
+      padding: .7rem 1rem;
+      border-radius: 3px;
+      font-size: .75rem;
+      letter-spacing: .03em;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .alert.visible { display: block; }
+    .alert-success { background: rgba(0,229,160,.1); border: 1px solid var(--green); color: var(--green); }
+    .alert-error   { background: rgba(255,68,85,.1);  border: 1px solid var(--red);  color: var(--red);  }
+
+    /* ── Documents ── */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--cyan);
+      background: rgba(0,207,255,.03);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: .75rem;
+      color: var(--text-dim);
+    }
+
+    .upload-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .65rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: .35rem;
+    }
+
+    .upload-sub {
+      font-size: .7rem;
+      color: var(--text-dim);
+      opacity: .6;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .doc-table th {
+      text-align: left;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .6rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .doc-table td {
+      padding: .75rem;
+      font-size: .78rem;
+      border-bottom: 1px solid rgba(30,32,64,.6);
+      vertical-align: middle;
+    }
+
+    .doc-table tr:last-child td { border-bottom: none; }
+
+    .doc-name {
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .doc-icon { color: var(--gold); font-size: .9rem; }
+
+    .doc-size { color: var(--text-dim); }
+
+    .doc-date { color: var(--text-dim); font-size: .72rem; }
+
+    .doc-actions { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; }
+
+    .empty-row td {
+      text-align: center;
+      padding: 2.5rem;
+      color: var(--text-dim);
+      font-size: .8rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+    }
+
+    /* ── Processes ── */
+    .process-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .process-info { flex: 1; min-width: 0; }
+
+    .process-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      color: var(--white);
+      margin-bottom: .3rem;
+    }
+
+    .process-desc {
+      font-size: .75rem;
+      color: var(--text-dim);
+    }
+
+    .process-meta {
+      font-size: .7rem;
+      color: var(--text-dim);
+      margin-top: .3rem;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .3rem .7rem;
+      border-radius: 2px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: .6rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .badge-pending     { background: rgba(90,96,128,.15); color: var(--text-dim); border: 1px solid var(--border); }
+    .badge-in_progress { background: rgba(0,207,255,.1);  color: var(--cyan);     border: 1px solid var(--cyan-dim); }
+    .badge-review      { background: rgba(201,146,58,.1); color: var(--gold);     border: 1px solid var(--gold-dim); }
+    .badge-completed   { background: rgba(0,229,160,.1);  color: var(--green);    border: 1px solid #00a06e; }
+
+    .no-processes {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-dim);
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+    }
+
+    /* ── Upload progress ── */
+    .upload-progress {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      padding: .75rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 1.25rem;
+      font-size: .75rem;
+    }
+
+    .upload-progress.visible { display: flex; }
+
+    .progress-bar-wrap {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--cyan);
+      width: 0%;
+      transition: width .3s;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .tab-btn { padding: .8rem .9rem; font-size: .6rem; letter-spacing: .1em; }
+      .topbar-right .user-chip span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">YAKU <span>Accounting</span></div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-initials">—</div>
+        <span id="topbar-username"></span>
+      </div>
+      <a href="#" class="logout" onclick="logout()">Sign out</a>
+    </div>
+  </div>
+
+  <!-- PORTAL BODY -->
+  <div class="portal-body">
+
+    <!-- TABS -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('details', this)">My Details</button>
+      <button class="tab-btn" onclick="switchTab('documents', this)">Documents</button>
+      <button class="tab-btn" onclick="switchTab('processes', this)">Processes</button>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="tab-content">
+
+      <!-- MY DETAILS -->
+      <div class="tab-pane active" id="tab-details">
+        <div class="section-heading">
+          <h2>Personal Details</h2>
+          <span class="tag">Operator Profile</span>
+        </div>
+
+        <div id="details-alert-success" class="alert alert-success"></div>
+        <div id="details-alert-error"   class="alert alert-error"></div>
+
+        <div class="card">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Email address</label>
+              <input type="email" id="d-email" readonly />
+            </div>
+            <div class="form-group">
+              <label>Full name *</label>
+              <input type="text" id="d-name" placeholder="Jane Smith" />
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="text" id="d-phone" placeholder="+27 82 000 0000" />
+            </div>
+            <div class="form-group full">
+              <label>Company</label>
+              <input type="text" id="d-company" placeholder="Smith Holdings (Pty) Ltd" />
+            </div>
+          </div>
+          <div style="margin-top:1.5rem">
+            <button class="btn btn-primary" id="btn-save-details" onclick="saveDetails()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="tab-pane" id="tab-documents">
+        <div class="section-heading">
+          <h2>Documents</h2>
+          <span class="tag" id="doc-count-tag">0 files</span>
+        </div>
+
+        <div id="docs-alert-success" class="alert alert-success"></div>
+        <div id="docs-alert-error"   class="alert alert-error"></div>
+
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="file-input" multiple onchange="handleFiles(this.files)" />
+          <div class="upload-icon">↑</div>
+          <div class="upload-text">Upload Documents</div>
+          <div class="upload-sub">Click or drag &amp; drop · PDF, DOC, XLSX, PNG, JPG</div>
+        </div>
+
+        <div class="upload-progress" id="upload-progress">
+          <span id="upload-filename" style="min-width:150px;color:var(--cyan)"></span>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <span id="upload-pct" style="min-width:36px;text-align:right;color:var(--text-dim)">0%</span>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>File name</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="doc-list">
+              <tr class="empty-row"><td colspan="4">No documents uploaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PROCESSES -->
+      <div class="tab-pane" id="tab-processes">
+        <div class="section-heading">
+          <h2>Accounting Processes</h2>
+          <span class="tag">Status Board</span>
+        </div>
+
+        <div id="processes-list"></div>
+      </div>
+
+    </div><!-- /tab-content -->
+  </div><!-- /portal-body -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPA_URL = 'https://jlcjdhzdcuwwibqmyfcy.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k';
+    const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+    let currentUser = null;
+    let documents   = [];
+
+    // ── Auth guard ─────────────────────────────────────────────────────────────
+    (async function() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.replace('login.html'); return; }
+      currentUser = session.user;
+
+      const { data: profile } = await sb
+        .from('profiles')
+        .select('full_name, role, phone, company_name')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!profile || profile.role !== 'client') {
+        location.replace('crm.html');
+        return;
+      }
+
+      // Populate topbar
+      const name = profile.full_name || currentUser.email;
+      const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+      document.getElementById('topbar-username').textContent = name;
+      document.getElementById('user-initials').textContent = initials;
+
+      // Populate details form
+      document.getElementById('d-email').value   = currentUser.email;
+      document.getElementById('d-name').value    = profile.full_name    || '';
+      document.getElementById('d-phone').value   = profile.phone        || '';
+      document.getElementById('d-company').value = profile.company_name || '';
+
+      // Load data
+      await Promise.all([loadDocuments(), loadProcesses()]);
+    }());
+
+    async function logout() {
+      await sb.auth.signOut();
+      location.replace('login.html');
+    }
+
+    // ── Tabs ───────────────────────────────────────────────────────────────────
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // ── Alert helpers ──────────────────────────────────────────────────────────
+    function showAlert(id, msg, timeout = 4000) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.add('visible');
+      if (timeout) setTimeout(() => el.classList.remove('visible'), timeout);
+    }
+
+    // ── Details ────────────────────────────────────────────────────────────────
+    async function saveDetails() {
+      const name    = document.getElementById('d-name').value.trim();
+      const phone   = document.getElementById('d-phone').value.trim();
+      const company = document.getElementById('d-company').value.trim();
+
+      if (!name) { showAlert('details-alert-error', 'Full name is required.'); return; }
+
+      const btn = document.getElementById('btn-save-details');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      const { error } = await sb.from('profiles').update({
+        full_name:    name,
+        phone:        phone   || null,
+        company_name: company || null,
+      }).eq('id', currentUser.id);
+
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+
+      if (error) {
+        showAlert('details-alert-error', error.message);
+      } else {
+        showAlert('details-alert-success', 'Profile updated successfully.');
+        // refresh topbar
+        const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        document.getElementById('topbar-username').textContent = name;
+        document.getElementById('user-initials').textContent = initials;
+      }
+    }
+
+    // ── Documents ──────────────────────────────────────────────────────────────
+    async function loadDocuments() {
+      const { data, error } = await sb
+        .from('documents')
+        .select('*')
+        .eq('client_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error('loadDocuments:', error); return; }
+      documents = data || [];
+      renderDocuments();
+    }
+
+    function renderDocuments() {
+      const tbody = document.getElementById('doc-list');
+      const tag   = document.getElementById('doc-count-tag');
+      tag.textContent = documents.length + ' file' + (documents.length !== 1 ? 's' : '');
+
+      if (documents.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No documents uploaded yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = documents.map(d => `
+        <tr>
+          <td>
+            <span class="doc-name">
+              <span class="doc-icon">${fileIcon(d.file_name)}</span>
+              ${escHtml(d.file_name)}
+            </span>
+          </td>
+          <td class="doc-size">${formatBytes(d.file_size || 0)}</td>
+          <td class="doc-date">${formatDate(d.created_at)}</td>
+          <td>
+            <div class="doc-actions">
+              <button class="btn btn-outline btn-sm" onclick="downloadDoc('${d.storage_path}', '${escHtml(d.file_name)}')">↓ Download</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}', '${d.storage_path}')">✕</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function fileIcon(name) {
+      const ext = (name || '').split('.').pop().toLowerCase();
+      if (['pdf'].includes(ext)) return '📄';
+      if (['doc','docx'].includes(ext)) return '📝';
+      if (['xls','xlsx','csv'].includes(ext)) return '📊';
+      if (['png','jpg','jpeg','gif','webp'].includes(ext)) return '🖼️';
+      return '📁';
+    }
+
+    async function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      for (const file of files) {
+        await uploadFile(file);
+      }
+      document.getElementById('file-input').value = '';
+    }
+
+    async function uploadFile(file) {
+      const progress = document.getElementById('upload-progress');
+      const bar      = document.getElementById('progress-bar');
+      const pct      = document.getElementById('upload-pct');
+      const fname    = document.getElementById('upload-filename');
+
+      progress.classList.add('visible');
+      bar.style.width = '10%';
+      pct.textContent = '10%';
+      fname.textContent = file.name;
+
+      const storagePath = `${currentUser.id}/${Date.now()}_${file.name}`;
+      const { error: upErr } = await sb.storage
+        .from('client-documents')
+        .upload(storagePath, file);
+
+      bar.style.width = '70%';
+      pct.textContent = '70%';
+
+      if (upErr) {
+        progress.classList.remove('visible');
+        showAlert('docs-alert-error', 'Upload failed: ' + upErr.message);
+        return;
+      }
+
+      const { error: dbErr } = await sb.from('documents').insert({
+        client_id:    currentUser.id,
+        file_name:    file.name,
+        file_size:    file.size,
+        file_type:    file.type,
+        storage_path: storagePath,
+      });
+
+      bar.style.width = '100%';
+      pct.textContent = '100%';
+
+      setTimeout(() => {
+        progress.classList.remove('visible');
+        bar.style.width = '0%';
+      }, 600);
+
+      if (dbErr) {
+        showAlert('docs-alert-error', 'File saved but record failed: ' + dbErr.message);
+        return;
+      }
+
+      showAlert('docs-alert-success', `${file.name} uploaded successfully.`);
+      await loadDocuments();
+    }
+
+    async function downloadDoc(storagePath, fileName) {
+      const { data, error } = await sb.storage
+        .from('client-documents')
+        .download(storagePath);
+
+      if (error) { showAlert('docs-alert-error', 'Download failed: ' + error.message); return; }
+
+      const url = URL.createObjectURL(data);
+      const a   = document.createElement('a');
+      a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function deleteDoc(docId, storagePath) {
+      if (!confirm('Delete this document? This cannot be undone.')) return;
+
+      const { error: stErr } = await sb.storage.from('client-documents').remove([storagePath]);
+      if (stErr) { showAlert('docs-alert-error', 'Storage delete failed: ' + stErr.message); return; }
+
+      const { error: dbErr } = await sb.from('documents').delete().eq('id', docId);
+      if (dbErr) { showAlert('docs-alert-error', 'Record delete failed: ' + dbErr.message); return; }
+
+      documents = documents.filter(d => d.id !== docId);
+      renderDocuments();
+      showAlert('docs-alert-success', 'Document deleted.');
+    }
+
+    // Drag & drop
+    const zone = document.getElementById('upload-zone');
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    // ── Processes ─────────────────────────────────────────────────────────────
+    async function loadProcesses() {
+      const { data, error } = await sb
+        .from('accounting_processes')
+        .select('*')
+        .eq('client_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error('loadProcesses:', error); return; }
+      renderProcesses(data || []);
+    }
+
+    function renderProcesses(procs) {
+      const container = document.getElementById('processes-list');
+
+      if (procs.length === 0) {
+        container.innerHTML = '<div class="no-processes">No active processes — your accountant will add them here.</div>';
+        return;
+      }
+
+      const badgeClass = {
+        pending:     'badge-pending',
+        in_progress: 'badge-in_progress',
+        review:      'badge-review',
+        completed:   'badge-completed',
+      };
+
+      const badgeLabel = {
+        pending:     'Pending',
+        in_progress: 'In Progress',
+        review:      'Under Review',
+        completed:   'Completed',
+      };
+
+      container.innerHTML = procs.map(p => `
+        <div class="process-card">
+          <div class="process-info">
+            <div class="process-name">${escHtml(p.name)}</div>
+            ${p.description ? `<div class="process-desc">${escHtml(p.description)}</div>` : ''}
+            <div class="process-meta">Started: ${formatDateShort(p.created_at)}</div>
+          </div>
+          <span class="status-badge ${badgeClass[p.status] || 'badge-pending'}">
+            ${badgeLabel[p.status] || p.status}
+          </span>
+        </div>`).join('');
+    }
+
+    // ── Utils ──────────────────────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '—';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDateShort(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  </script>
+</body>
+</html>
