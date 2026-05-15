@@ -1,32 +1,47 @@
+const SUPABASE_URL = 'https://jlcjdhzdcuwwibqmyfcy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // ── State ──────────────────────────────────────────────
-const STORAGE_KEY = 'summit_crm_clients';
 let clients = [];
 let activeId = null;
 let editingId = null;
 let searchQuery = '';
 
-// ── Persistence ────────────────────────────────────────
-function load() {
-  try { clients = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { clients = []; }
-  if (clients.length === 0) seedDemoData();
+// ── Data ───────────────────────────────────────────────
+function mapClient(c) {
+  return {
+    ...c,
+    createdAt: c.created_at,
+    notes: (c.notes || [])
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map(n => ({ ...n, createdAt: n.created_at })),
+  };
 }
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+async function load() {
+  const { data, error } = await db
+    .from('clients')
+    .select('*, notes(*)')
+    .order('created_at', { ascending: false });
+
+  if (error) { console.error('Load error:', error); clients = []; return; }
+
+  clients = (data || []).map(mapClient);
+  if (clients.length === 0) await seedDemoData();
 }
 
-function seedDemoData() {
-  clients = [
-    { id: uid(), first: 'Sarah', last: 'Johnson', company: 'Johnson Retail (Pty) Ltd', email: 'sarah@johnsonretail.co.za', phone: '+27 82 111 2233', service: 'Bookkeeping', status: 'Active', createdAt: '2024-03-10', notes: [{ id: uid(), text: 'Onboarded Q1 2024. Uses Xero — needs monthly reconciliation by the 5th.', createdAt: ts() }] },
-    { id: uid(), first: 'Marcus', last: 'Dlamini', company: 'Dlamini Consulting', email: 'marcus@dlamini.co.za', phone: '+27 71 444 5566', service: 'Tax Planning', status: 'Active', createdAt: '2023-08-15', notes: [{ id: uid(), text: 'Provisional tax due end of August. Remind 3 weeks prior.', createdAt: ts() }] },
-    { id: uid(), first: 'Priya', last: 'Naidoo', company: '', email: 'priya.naidoo@gmail.com', phone: '+27 83 777 8899', service: 'Tax Planning', status: 'Active', createdAt: '2025-01-20', notes: [] },
+async function seedDemoData() {
+  const seeds = [
+    { first: 'Sarah',  last: 'Johnson', company: 'Johnson Retail (Pty) Ltd', email: 'sarah@johnsonretail.co.za', phone: '+27 82 111 2233', service: 'Bookkeeping',  status: 'Active', created_at: '2024-03-10' },
+    { first: 'Marcus', last: 'Dlamini', company: 'Dlamini Consulting',        email: 'marcus@dlamini.co.za',      phone: '+27 71 444 5566', service: 'Tax Planning', status: 'Active', created_at: '2023-08-15' },
+    { first: 'Priya',  last: 'Naidoo',  company: '',                          email: 'priya.naidoo@gmail.com',    phone: '+27 83 777 8899', service: 'Tax Planning', status: 'Active', created_at: '2025-01-20' },
   ];
-  save();
+  const { data } = await db.from('clients').insert(seeds).select('*, notes(*)');
+  if (data) clients = data.map(mapClient);
 }
 
 // ── Helpers ────────────────────────────────────────────
-function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
 function ts() { return new Date().toISOString(); }
 function initials(c) { return (c.first[0] + c.last[0]).toUpperCase(); }
 function fullName(c) { return c.first + ' ' + c.last; }
@@ -36,13 +51,17 @@ function formatDate(iso) {
   return new Date(iso).toLocaleString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── Render sidebar ─────────────────────────────────────
 function renderSidebar() {
   const list = document.getElementById('client-list');
   const q = searchQuery.toLowerCase();
   const filtered = clients.filter(c =>
     fullName(c).toLowerCase().includes(q) ||
-    c.company.toLowerCase().includes(q) ||
+    (c.company || '').toLowerCase().includes(q) ||
     c.email.toLowerCase().includes(q)
   );
 
@@ -78,7 +97,7 @@ function renderMain() {
 
   const notesHtml = client.notes.length === 0
     ? `<p class="no-notes">No notes yet — add one above.</p>`
-    : [...client.notes].reverse().map(n => `
+    : client.notes.map(n => `
       <div class="note-card">
         <div class="note-header">
           <span class="note-timestamp">${formatDate(n.createdAt)}</span>
@@ -135,10 +154,6 @@ function renderMain() {
     </div>`;
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 // ── Actions ────────────────────────────────────────────
 function selectClient(id) {
   activeId = id;
@@ -151,30 +166,42 @@ function filterClients(q) {
   renderSidebar();
 }
 
-function addNote(clientId) {
+async function addNote(clientId) {
   const input = document.getElementById('note-input');
   const text = input.value.trim();
   if (!text) return;
+
+  const { data, error } = await db
+    .from('notes')
+    .insert({ client_id: clientId, text, created_at: ts() })
+    .select()
+    .single();
+
+  if (error) { console.error('Add note error:', error); return; }
+
   const client = clients.find(c => c.id === clientId);
-  if (!client) return;
-  client.notes.push({ id: uid(), text, createdAt: ts() });
-  save();
+  if (client) client.notes.unshift({ ...data, createdAt: data.created_at });
+  input.value = '';
   renderMain();
 }
 
-function deleteNote(clientId, noteId) {
+async function deleteNote(clientId, noteId) {
+  const { error } = await db.from('notes').delete().eq('id', noteId);
+  if (error) { console.error('Delete note error:', error); return; }
+
   const client = clients.find(c => c.id === clientId);
-  if (!client) return;
-  client.notes = client.notes.filter(n => n.id !== noteId);
-  save();
+  if (client) client.notes = client.notes.filter(n => n.id !== noteId);
   renderMain();
 }
 
-function deleteClient(id) {
+async function deleteClient(id) {
   if (!confirm('Delete this client? This cannot be undone.')) return;
+
+  const { error } = await db.from('clients').delete().eq('id', id);
+  if (error) { console.error('Delete client error:', error); return; }
+
   clients = clients.filter(c => c.id !== id);
   if (activeId === id) activeId = null;
-  save();
   renderSidebar();
   renderMain();
 }
@@ -206,35 +233,44 @@ function closeModalOnOverlay(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 }
 
-function saveClient() {
-  const first   = document.getElementById('f-first').value.trim();
-  const last    = document.getElementById('f-last').value.trim();
-  const email   = document.getElementById('f-email').value.trim();
+async function saveClient() {
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const email = document.getElementById('f-email').value.trim();
 
   if (!first || !last || !email) { alert('First name, last name, and email are required.'); return; }
 
+  const fields = {
+    first, last, email,
+    company: document.getElementById('f-company').value.trim(),
+    phone:   document.getElementById('f-phone').value.trim(),
+    service: document.getElementById('f-service').value,
+    status:  document.getElementById('f-status').value,
+  };
+
   if (editingId) {
-    const client = clients.find(c => c.id === editingId);
-    Object.assign(client, { first, last, email,
-      company: document.getElementById('f-company').value.trim(),
-      phone:   document.getElementById('f-phone').value.trim(),
-      service: document.getElementById('f-service').value,
-      status:  document.getElementById('f-status').value,
-    });
+    const { data, error } = await db
+      .from('clients')
+      .update(fields)
+      .eq('id', editingId)
+      .select('*, notes(*)')
+      .single();
+
+    if (error) { console.error('Update error:', error); return; }
+    const idx = clients.findIndex(c => c.id === editingId);
+    if (idx !== -1) clients[idx] = mapClient(data);
   } else {
-    clients.push({
-      id: uid(), first, last, email,
-      company: document.getElementById('f-company').value.trim(),
-      phone:   document.getElementById('f-phone').value.trim(),
-      service: document.getElementById('f-service').value,
-      status:  document.getElementById('f-status').value,
-      createdAt: new Date().toISOString().slice(0, 10),
-      notes: [],
-    });
-    activeId = clients[clients.length - 1].id;
+    const { data, error } = await db
+      .from('clients')
+      .insert({ ...fields, created_at: new Date().toISOString().slice(0, 10) })
+      .select('*, notes(*)')
+      .single();
+
+    if (error) { console.error('Insert error:', error); return; }
+    clients.unshift(mapClient(data));
+    activeId = data.id;
   }
 
-  save();
   closeModal();
   renderSidebar();
   renderMain();
@@ -250,6 +286,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ───────────────────────────────────────────────
-load();
-renderSidebar();
-renderMain();
+load().then(() => {
+  renderSidebar();
+  renderMain();
+});
