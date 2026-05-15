@@ -3,413 +3,768 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAKU Accounting — Client Portal Login</title>
+  <title>YAKU Accounting — Client Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --navy: #1a2e4a;
-      --blue: #2563eb;
-      --blue-light: #60a5fa;
-      --panel-dark: #0f1419;
-      --panel-card: #1a222d;
-      --gray-200: #e5e7eb;
-      --gray-400: #9ca3af;
-      --gray-500: #6b7280;
-      --gray-600: #4b5563;
-      --gray-800: #1f2937;
-      --red: #dc2626;
-      --red-light: #fef2f2;
-      --green: #16a34a;
-      --green-light: #f0fdf4;
-      --white: #fff;
-      --radius: 8px;
+      --ink:         #120e08;
+      --ink-mid:     #2c2015;
+      --gold:        #c9923a;
+      --gold-bright: #e8b96a;
+      --gold-dim:    rgba(201, 146, 58, 0.12);
+      --gold-faint:  rgba(201, 146, 58, 0.045);
+      --cream:       #f8f4ee;
+      --cream-dark:  #ede6d9;
+      --warm-200:    #ddd0bc;
+      --warm-400:    #9e8b72;
+      --warm-600:    #6b5740;
+      --red:         #b83030;
+      --red-bg:      #fdf4f4;
+      --green:       #2a6e3c;
+      --green-bg:    #f2faf5;
+      --panel-bg:    #0f0b06;
     }
+
+    html { height: 100%; }
 
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'DM Sans', system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
-      color: var(--gray-800);
+      background: var(--panel-bg);
+      color: var(--ink);
     }
 
-    /* ── Left panel ── */
+    /* ═══════════════════════════════════════
+       LEFT PANEL
+    ═══════════════════════════════════════ */
+
     .panel-left {
       flex: 1;
-      min-height: 100vh;
-      background: var(--panel-dark);
-      background-image: radial-gradient(ellipse 80% 60% at 50% 0%, #1e2d42 0%, var(--panel-dark) 70%);
-      color: var(--white);
+      position: relative;
       display: flex;
       flex-direction: column;
-      padding: 3rem 4rem;
+      padding: 3.5rem 4.5rem;
+      overflow: hidden;
+      min-height: 100vh;
     }
 
-    .brand-logo {
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 3rem;
+    /* Subtle gold grid */
+    .panel-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--gold-faint) 1px, transparent 1px),
+        linear-gradient(90deg, var(--gold-faint) 1px, transparent 1px);
+      background-size: 56px 56px;
+      pointer-events: none;
     }
-    .brand-logo span { color: var(--blue-light); }
-    .brand-logo .tagline {
-      display: block;
-      font-size: 0.65rem;
+
+    /* Concentric halos — bottom-left corner */
+    .panel-left::after {
+      content: '';
+      position: absolute;
+      bottom: -120px;
+      left: -120px;
+      width: 560px;
+      height: 560px;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 1px  rgba(201,146,58,0.10),
+        0 0 0 50px rgba(201,146,58,0.06),
+        0 0 0 100px rgba(201,146,58,0.04),
+        0 0 0 150px rgba(201,146,58,0.025),
+        0 0 0 200px rgba(201,146,58,0.015),
+        0 0 0 250px rgba(201,146,58,0.008);
+      pointer-events: none;
+    }
+
+    /* Ambient warm glow — top-right */
+    .glow {
+      position: absolute;
+      top: -10%;
+      right: -5%;
+      width: 55%;
+      height: 65%;
+      background: radial-gradient(ellipse, rgba(201,146,58,0.07) 0%, transparent 68%);
+      pointer-events: none;
+    }
+
+    /* Orbiting ring */
+    .orbit {
+      position: absolute;
+      top: 10%;
+      right: 7%;
+      width: 148px;
+      height: 148px;
+      border: 1px solid rgba(201,146,58,0.16);
+      border-radius: 50%;
+      animation: orbit 45s linear infinite;
+    }
+    .orbit::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: calc(50% - 4px);
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.55;
+    }
+    .orbit::after {
+      content: '';
+      position: absolute;
+      bottom: 12px;
+      right: 2px;
+      width: 4px;
+      height: 4px;
+      background: var(--gold-bright);
+      border-radius: 50%;
+      opacity: 0.35;
+    }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+
+    /* Giant watermark initial */
+    .watermark {
+      position: absolute;
+      top: -14%;
+      right: -6%;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28rem, 48vw, 58rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(201,146,58,0.055);
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    /* ── Brand ── */
+    .brand {
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-wordmark {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      line-height: 1;
+    }
+
+    .brand-yaku {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      font-style: normal;
+      font-size: 5.2rem;
+      letter-spacing: -0.03em;
+      color: #fff;
+      line-height: 0.88;
+    }
+
+    .brand-acct {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: 1.9rem;
+      letter-spacing: 0.01em;
+      color: rgba(255,255,255,0.38);
+      margin-left: 3px;
+    }
+
+    .brand-rule {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 0.85rem;
+    }
+
+    .brand-rule-line {
+      width: 28px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.55;
+    }
+
+    .brand-rule-text {
+      font-size: 0.62rem;
       font-weight: 600;
-      letter-spacing: 2px;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
-      color: var(--gray-400);
-      margin-top: 0.35rem;
+      color: var(--gold);
+      opacity: 0.65;
     }
 
-    .panel-hero {
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      z-index: 2;
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      max-width: 640px;
-    }
-
-    .panel-hero h1 {
-      font-size: clamp(1.5rem, 2.5vw, 2rem);
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      line-height: 1.25;
-      margin-bottom: 1rem;
-    }
-
-    .panel-hero .lead {
-      font-size: 1rem;
-      color: #94a3b8;
-      line-height: 1.65;
       max-width: 520px;
+      padding: 3rem 0;
     }
 
-    .feature-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 3rem;
+    .hero-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 3vw, 2.75rem);
+      line-height: 1.18;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 1.1rem;
     }
 
-    .feature-card {
-      background: var(--panel-card);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 1.25rem 1.35rem;
+    .hero-headline em {
+      font-style: italic;
+      color: var(--gold-bright);
     }
 
-    .feature-card .icon {
-      font-size: 1.35rem;
-      margin-bottom: 0.65rem;
+    .hero-sub {
+      font-size: 0.85rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.35);
+      max-width: 400px;
+      margin-bottom: 3rem;
     }
 
-    .feature-card h3 {
-      font-size: 0.9rem;
-      font-weight: 700;
-      margin-bottom: 0.35rem;
-    }
-
-    .feature-card p {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      line-height: 1.5;
-    }
-
-    /* ── Right panel ── */
-    .panel-right {
-      width: 100%;
-      max-width: 420px;
-      min-height: 100vh;
-      background: var(--white);
+    /* Feature list */
+    .feat-list {
+      list-style: none;
       display: flex;
       flex-direction: column;
-      padding: 3rem 2.5rem 2rem;
     }
 
-    .view { display: flex; flex-direction: column; flex: 1; }
-    .view.hidden { display: none !important; }
-
-    .signin-header h2 {
-      font-size: 1.65rem;
-      font-weight: 800;
-      color: var(--gray-800);
-      margin-bottom: 0.35rem;
+    .feat-list li {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid rgba(201,146,58,0.09);
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.025em;
+      color: rgba(255,255,255,0.42);
     }
 
-    .signin-header p {
-      font-size: 0.88rem;
-      color: var(--gray-500);
-      margin-bottom: 2rem;
+    .feat-list li:first-child { border-top: 1px solid rgba(201,146,58,0.09); }
+
+    .feat-tick {
+      width: 18px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.45;
+      flex-shrink: 0;
     }
 
+    /* ── Left panel entry animations ── */
+    @keyframes fromBelow {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand { animation: fromBelow 0.8s 0.05s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .hero  { animation: fromBelow 0.8s 0.2s  cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /* ═══════════════════════════════════════
+       RIGHT PANEL
+    ═══════════════════════════════════════ */
+
+    .panel-right {
+      width: 460px;
+      flex-shrink: 0;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    /* Gold top trim */
+    .panel-right::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 40%, var(--gold-bright) 60%, transparent 100%);
+      opacity: 0.5;
+      z-index: 3;
+    }
+
+    /* Subtle paper grain */
+    .panel-right::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Right panel slide-in */
+    @keyframes fromRight {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .panel-right { animation: fromRight 0.7s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /* Top bar */
+    .rp-top {
+      position: relative;
+      z-index: 2;
+      padding: 2rem 3rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rp-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--warm-400);
+    }
+
+    .rp-back {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--warm-400);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .rp-back:hover { color: var(--ink); }
+
+    /* Form area */
+    .form-area {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      padding: 2rem 3rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── Views ── */
+    .view {
+      display: flex;
+      flex-direction: column;
+      animation: viewIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .view.hidden { display: none; }
+
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* View header */
+    .v-eyebrow {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.55rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .v-eyebrow::before {
+      content: '';
+      width: 14px;
+      height: 1px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .v-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 500;
+      line-height: 1.05;
+      color: var(--ink);
+      margin-bottom: 0.45rem;
+    }
+
+    .v-sub {
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: var(--warm-400);
+      line-height: 1.55;
+      margin-bottom: 2.25rem;
+    }
+
+    /* ── Alerts ── */
     .alert-msg {
-      border-radius: var(--radius);
-      padding: 0.6rem 0.85rem;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
       display: none;
-      line-height: 1.45;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1.25rem;
+      border-left: 2.5px solid;
     }
     .alert-msg.visible { display: block; }
-    .alert-msg.error   { background: var(--red-light);   color: var(--red);   border: 1px solid #fecaca; }
-    .alert-msg.success { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+    .alert-msg.error   { background: var(--red-bg);   color: var(--red);   border-left-color: var(--red); }
+    .alert-msg.success { background: var(--green-bg); color: var(--green); border-left-color: var(--green); }
 
-    .form-group { margin-bottom: 0.85rem; }
+    /* ── Fields ── */
+    .field { margin-bottom: 1.6rem; position: relative; }
 
-    .form-group label {
+    .field label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.62rem;
       font-weight: 600;
-      color: var(--gray-600);
-      margin-bottom: 0.35rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--warm-600);
+      margin-bottom: 0.5rem;
     }
 
-    .form-group input {
+    .field input {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid var(--warm-200);
+      padding: 0.45rem 0 0.6rem;
+      font-family: 'DM Sans', sans-serif;
       font-size: 0.95rem;
-      font-family: inherit;
-      color: var(--gray-800);
+      font-weight: 400;
+      color: var(--ink);
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      border-radius: 0;
+      transition: border-color 0.25s;
+      -webkit-appearance: none;
     }
 
-    .form-group input:focus {
-      border-color: var(--navy);
-      box-shadow: 0 0 0 3px rgba(26, 46, 74, 0.08);
+    .field input::placeholder {
+      color: var(--warm-200);
+      font-weight: 300;
     }
 
-    .form-group input::placeholder { color: var(--gray-400); }
-    .form-group input:disabled { background: #f9fafb; }
+    .field input:focus { border-bottom-color: var(--gold); }
+    .field input:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .btn-primary {
+    .req { color: var(--gold); }
+
+    /* ── Submit button ── */
+    .btn-submit {
       width: 100%;
-      padding: 0.8rem;
-      margin-top: 0.5rem;
-      background: var(--navy);
-      color: var(--white);
+      margin-top: 0.25rem;
+      padding: 0.9rem 1.5rem;
+      background: var(--ink);
+      color: var(--cream);
       border: none;
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
-      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
     }
 
-    .btn-primary:hover:not(:disabled) { background: #243a5c; }
-    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--gray-200);
-      margin: 1.75rem 0 1.25rem;
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 30%, rgba(201,146,58,0.22) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.55s ease;
     }
 
-    .switch-link {
-      font-size: 0.85rem;
-      color: var(--gray-500);
+    .btn-submit:hover { background: #2a1f12; }
+    .btn-submit:hover::after { transform: translateX(100%); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-submit:disabled::after { display: none; }
+
+    /* ── Switch / divider ── */
+    .split-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.75rem 0 1.5rem;
+    }
+    .split-row::before,
+    .split-row::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--cream-dark);
+    }
+    .split-row span {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--warm-400);
+    }
+
+    .switch-text {
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: var(--warm-400);
       text-align: center;
     }
-    .switch-link a {
-      color: var(--blue);
-      font-weight: 600;
+
+    .switch-text a {
+      color: var(--ink-mid);
+      font-weight: 500;
       text-decoration: none;
+      border-bottom: 1px solid var(--warm-200);
+      padding-bottom: 1px;
+      transition: border-color 0.2s, color 0.2s;
     }
-    .switch-link a:hover { text-decoration: underline; }
+    .switch-text a:hover { color: var(--ink); border-bottom-color: var(--gold); }
 
-    /* ── Onboarding ── */
-    .onboard-badge {
-      display: inline-flex;
+    /* ── Onboarding specifics ── */
+    .onboard-eyebrow {
+      display: flex;
       align-items: center;
-      background: #eff6ff;
-      color: var(--blue);
-      border: 1px solid #bfdbfe;
-      border-radius: 20px;
-      padding: 0.3rem 0.8rem;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      gap: 0.55rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      margin-bottom: 1rem;
-      width: fit-content;
+      color: var(--warm-400);
+      margin-bottom: 0.55rem;
+    }
+    .onboard-eyebrow::before {
+      content: '';
+      width: 14px;
+      height: 1px;
+      background: var(--gold);
     }
 
-    .fields-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--gray-400);
-      margin: 1.25rem 0 0.75rem;
+    .section-row {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin: 0.25rem 0 1.5rem;
     }
-
-    .required-star { color: var(--red); }
+    .section-row span {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--warm-400);
+      white-space: nowrap;
+    }
+    .section-row::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--cream-dark);
+    }
 
     /* ── Footer ── */
-    .panel-footer {
-      margin-top: auto;
-      padding-top: 2rem;
-      font-size: 0.75rem;
-      color: var(--gray-400);
-      text-align: center;
-      line-height: 1.5;
+    .rp-footer {
+      position: relative;
+      z-index: 2;
+      padding: 1.25rem 3rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .panel-footer a {
-      color: var(--blue);
-      font-weight: 600;
-      text-decoration: none;
+    .rp-footer-text {
+      font-size: 0.68rem;
+      font-weight: 300;
+      color: var(--warm-200);
+      letter-spacing: 0.02em;
     }
 
-    .panel-footer a:hover { text-decoration: underline; }
-
-    @media (max-width: 900px) {
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════ */
+    @media (max-width: 880px) {
       body { flex-direction: column; }
-      .panel-left { min-height: auto; padding: 2.5rem 1.75rem; }
-      .panel-right { max-width: none; min-height: auto; padding: 2.5rem 1.75rem 2rem; }
-      .feature-grid { grid-template-columns: 1fr; margin-top: 2rem; }
-      .panel-hero { justify-content: flex-start; }
+
+      .panel-left {
+        min-height: auto;
+        padding: 2.5rem 2rem 2.5rem;
+      }
+
+      .hero { display: none; }
+      .watermark { display: none; }
+      .panel-left::after { display: none; }
+
+      .panel-right {
+        width: 100%;
+        min-height: auto;
+      }
+
+      .form-area { padding: 2rem 2rem 1.5rem; }
+      .rp-top    { padding: 2rem 2rem 0; }
+      .rp-footer { padding: 1rem 2rem 1.75rem; }
     }
   </style>
 </head>
 <body>
 
-  <aside class="panel-left">
-    <div class="brand-logo" aria-label="YAKU Accounting">
-      YAKU <span>Accounting</span>
-      <span class="tagline">Client Portal</span>
+  <!-- ════════════════════════════════
+       LEFT PANEL
+  ════════════════════════════════ -->
+  <aside class="panel-left" aria-label="YAKU Accounting brand panel">
+    <div class="glow"      aria-hidden="true"></div>
+    <div class="orbit"     aria-hidden="true"></div>
+    <div class="watermark" aria-hidden="true">Y</div>
+
+    <div class="brand">
+      <div class="brand-wordmark">
+        <span class="brand-yaku">YAKU</span>
+        <span class="brand-acct">Accounting</span>
+      </div>
+      <div class="brand-rule">
+        <span class="brand-rule-line"></span>
+        <span class="brand-rule-text">Client Portal</span>
+      </div>
     </div>
 
-    <div class="panel-hero">
-      <h1>Your finances, organised and secure</h1>
-      <p class="lead">
-        Access tax documents, track deadlines, and stay connected with your dedicated accountant — all in one secure client dashboard.
+    <div class="hero">
+      <h1 class="hero-headline">
+        Your finances,<br /><em>understood.</em>
+      </h1>
+      <p class="hero-sub">
+        A secure portal built for YAKU Accounting clients — access documents, track deadlines, and stay in sync with your dedicated accountant.
       </p>
-
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="icon" aria-hidden="true">📁</div>
-          <h3>Secure Document Hub</h3>
-          <p>Upload and access tax returns, statements, and financial records anytime.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon" aria-hidden="true">📊</div>
-          <h3>Financial Overview</h3>
-          <p>Dashboard snapshots of key metrics, cash flow, and account balances.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon" aria-hidden="true">📅</div>
-          <h3>Deadline Tracker</h3>
-          <p>Never miss a filing date, payment deadline, or compliance milestone.</p>
-        </div>
-        <div class="feature-card">
-          <div class="icon" aria-hidden="true">💬</div>
-          <h3>Direct Messaging</h3>
-          <p>Communicate with your account manager without leaving the portal.</p>
-        </div>
-      </div>
+      <ul class="feat-list">
+        <li><span class="feat-tick"></span>Secure document vault</li>
+        <li><span class="feat-tick"></span>Filing &amp; compliance deadlines</li>
+        <li><span class="feat-tick"></span>Direct accountant messaging</li>
+        <li><span class="feat-tick"></span>Financial dashboard overview</li>
+      </ul>
     </div>
   </aside>
 
+  <!-- ════════════════════════════════
+       RIGHT PANEL
+  ════════════════════════════════ -->
   <main class="panel-right">
 
-    <!-- ── VIEW: SIGN IN ── -->
-    <div class="view" id="view-signin">
-      <div class="signin-header">
-        <h2>Sign In</h2>
-        <p>Access your YAKU Accounting client dashboard</p>
-      </div>
-      <div class="alert-msg error"   id="signin-error"></div>
-      <div class="alert-msg success" id="signin-success"></div>
-      <div class="form-group">
-        <label for="signin-email">Email address</label>
-        <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="form-group">
-        <label for="signin-password">Password</label>
-        <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password" />
-      </div>
-      <button class="btn-primary" id="btn-signin" data-label="Sign In to Client Portal">
-        Sign In to Client Portal
-      </button>
-      <hr class="divider" />
-      <p class="switch-link">
-        First time here? <a href="#" id="go-register">Create your account</a>
-      </p>
-      <footer class="panel-footer">
-        YAKU Accounting — Client Portal<br />
-        <a href="index.html">← Back to website</a>
-      </footer>
+    <div class="rp-top">
+      <span class="rp-label">Secure Access</span>
+      <a href="index.html" class="rp-back" aria-label="Back to website">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+          <path d="M7 1.5L3.5 5.5L7 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to site
+      </a>
     </div>
 
-    <!-- ── VIEW: REGISTER ── -->
-    <div class="view hidden" id="view-register">
-      <div class="signin-header">
-        <h2>Create Account</h2>
-        <p>Set up access to your YAKU Accounting client portal</p>
-      </div>
-      <div class="alert-msg error" id="register-error"></div>
-      <div class="form-group">
-        <label for="reg-email">Email address</label>
-        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="form-group">
-        <label for="reg-password">Password</label>
-        <input type="password" id="reg-password" placeholder="Min. 8 characters" autocomplete="new-password" />
-      </div>
-      <div class="form-group">
-        <label for="reg-confirm">Confirm password</label>
-        <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" />
-      </div>
-      <button class="btn-primary" id="btn-register" data-label="Create Account">
-        Create Account
-      </button>
-      <hr class="divider" />
-      <p class="switch-link">
-        Already have an account? <a href="#" id="go-signin">Sign in</a>
-      </p>
-      <footer class="panel-footer">
-        YAKU Accounting — Client Portal<br />
-        <a href="index.html">← Back to website</a>
-      </footer>
-    </div>
+    <div class="form-area">
 
-    <!-- ── VIEW: ONBOARDING ── -->
-    <div class="view hidden" id="view-onboarding">
-      <span class="onboard-badge">New client setup</span>
-      <div class="signin-header">
-        <h2>Welcome aboard!</h2>
-        <p>Complete your profile to access the client portal</p>
+      <!-- ── VIEW: SIGN IN ── -->
+      <div class="view" id="view-signin">
+        <p class="v-eyebrow">Welcome back</p>
+        <h2 class="v-title">Sign In</h2>
+        <p class="v-sub">Access your YAKU Accounting client dashboard</p>
+
+        <div class="alert-msg error"   id="signin-error"></div>
+        <div class="alert-msg success" id="signin-success"></div>
+
+        <div class="field">
+          <label for="signin-email">Email address</label>
+          <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+
+        <button class="btn-submit" id="btn-signin" data-label="Sign In to Client Portal">
+          Sign In to Client Portal
+        </button>
+
+        <div class="split-row"><span>or</span></div>
+
+        <p class="switch-text">
+          First time here?&nbsp; <a href="#" id="go-register">Create your account</a>
+        </p>
       </div>
-      <div class="alert-msg error" id="onboard-error"></div>
-      <p class="fields-label">Your details</p>
-      <div class="form-group">
-        <label for="onboard-name">
-          Full name <span class="required-star">*</span>
-        </label>
-        <input type="text" id="onboard-name" placeholder="Jane Smith" autocomplete="name" />
+
+      <!-- ── VIEW: REGISTER ── -->
+      <div class="view hidden" id="view-register">
+        <p class="v-eyebrow">New client</p>
+        <h2 class="v-title">Create Account</h2>
+        <p class="v-sub">Set up secure access to your client portal</p>
+
+        <div class="alert-msg error" id="register-error"></div>
+
+        <div class="field">
+          <label for="reg-email">Email address</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Min. 8 characters" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="reg-confirm">Confirm password</label>
+          <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" />
+        </div>
+
+        <button class="btn-submit" id="btn-register" data-label="Create Account">
+          Create Account
+        </button>
+
+        <div class="split-row"><span>or</span></div>
+
+        <p class="switch-text">
+          Already have an account?&nbsp; <a href="#" id="go-signin">Sign in</a>
+        </p>
       </div>
-      <div class="form-group">
-        <label for="onboard-company">Company name</label>
-        <input type="text" id="onboard-company" placeholder="Smith Holdings (Pty) Ltd" autocomplete="organization" />
+
+      <!-- ── VIEW: ONBOARDING ── -->
+      <div class="view hidden" id="view-onboarding">
+        <p class="onboard-eyebrow">New client setup</p>
+        <h2 class="v-title">Welcome aboard.</h2>
+        <p class="v-sub">Complete your profile to access the portal</p>
+
+        <div class="alert-msg error" id="onboard-error"></div>
+
+        <div class="section-row"><span>Your details</span></div>
+
+        <div class="field">
+          <label for="onboard-name">Full name <span class="req">*</span></label>
+          <input type="text" id="onboard-name" placeholder="Jane Smith" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="onboard-company">Company name</label>
+          <input type="text" id="onboard-company" placeholder="Smith Holdings (Pty) Ltd" autocomplete="organization" />
+        </div>
+        <div class="field">
+          <label for="onboard-phone">Phone number</label>
+          <input type="tel" id="onboard-phone" placeholder="+27 82 000 0000" autocomplete="tel" />
+        </div>
+
+        <button class="btn-submit" id="btn-onboard" data-label="Complete Setup & Enter Portal">
+          Complete Setup &amp; Enter Portal
+        </button>
       </div>
-      <div class="form-group">
-        <label for="onboard-phone">Phone number</label>
-        <input type="tel" id="onboard-phone" placeholder="+27 82 000 0000" autocomplete="tel" />
-      </div>
-      <button class="btn-primary" id="btn-onboard" data-label="Complete Setup & Enter Portal">
-        Complete Setup &amp; Enter Portal
-      </button>
-      <footer class="panel-footer">
-        YAKU Accounting — Client Portal<br />
-        <a href="index.html">← Back to website</a>
-      </footer>
-    </div>
+
+    </div><!-- /form-area -->
+
+    <footer class="rp-footer">
+      <span class="rp-footer-text">© 2026 YAKU Accounting</span>
+      <span class="rp-footer-text">Secure · Encrypted · Private</span>
+    </footer>
 
   </main>
 
