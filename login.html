@@ -3,268 +3,242 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAKU Accounting — Client Portal Login</title>
+  <title>YAKU Accounting — Secure Access</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #05080f;
-      --bg-input: #0a1018;
-      --accent: #ff4522;
-      --cyan: #00a3e0;
-      --text: #ffffff;
-      --muted: #5a6478;
-      --border-input: #1a3a52;
+      --bg:           #08060a;
+      --glass:        rgba(40,28,8,.52);
+      --glass-input:  rgba(15,10,2,.72);
+      --border:       rgba(201,162,39,.14);
+      --border-strong:rgba(201,162,39,.30);
+      --gold:         #c9a227;
+      --gold-bright:  #e8c040;
+      --gold-dim:     rgba(201,162,39,.35);
+      --text:         #f5ead6;
+      --text-muted:   #8a7055;
+      --text-dim:     #4a3a25;
+      --red:          #e06060;
     }
 
     body {
-      font-family: 'JetBrains Mono', 'Consolas', monospace;
-      background: var(--bg);
+      font-family: 'Outfit', sans-serif;
+      background:
+        radial-gradient(circle at 78% -8%,  rgba(201,162,39,.15) 0%, transparent 42%),
+        radial-gradient(circle at -5% 95%,  rgba(160,100,15,.10) 0%, transparent 40%),
+        radial-gradient(circle at 45% 55%,  rgba(90, 55,  5,.04) 0%, transparent 65%),
+        var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem 1.25rem;
+      position: relative;
     }
 
-    body::before {
+    body::after {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(circle, rgba(0, 163, 224, 0.12) 1px, transparent 1px);
-      background-size: 28px 28px;
       pointer-events: none;
-      opacity: 0.35;
+      opacity: .022;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
     }
 
-    .login-shell {
+    .login-wrap {
       position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 480px;
+      max-width: 420px;
     }
 
-    .protocol-label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
+    .login-card {
+      background: var(--glass);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2.75rem 2.5rem;
+      box-shadow:
+        0 0 80px rgba(201,162,39,.07),
+        0 32px 80px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(201,162,39,.12);
+    }
+
+    /* ── Brand ── */
+    .brand { text-align: center; margin-bottom: 1.75rem; }
+
+    .brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.25rem;
+      font-weight: 300;
+      letter-spacing: .4em;
+      color: var(--gold);
+      line-height: 1;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
     }
 
-    .protocol-label::before {
-      content: '▶';
-      font-size: 0.55rem;
+    .brand-rule {
+      width: 40px;
+      height: 1px;
+      background: var(--gold-dim);
+      margin: .65rem auto;
     }
 
-    .title-block {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(2.5rem, 8vw, 3.75rem);
-      font-weight: 900;
-      line-height: 0.95;
-      letter-spacing: 0.02em;
+    .brand-sub {
+      font-size: .68rem;
+      font-weight: 400;
+      letter-spacing: .38em;
+      color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 1rem;
     }
 
-    .title-block span {
-      display: block;
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin-bottom: 1.75rem;
     }
 
-    .subtitle {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 2.5rem;
+    /* ── Heading ── */
+    .card-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: .3rem;
+    }
+
+    .card-sub {
+      font-size: .78rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
       line-height: 1.5;
     }
 
+    /* ── Error ── */
     .error-msg {
       display: none;
-      border-left: 3px solid var(--accent);
-      padding: 0.75rem 1rem;
-      margin-bottom: 1.75rem;
-      font-size: 0.78rem;
-      line-height: 1.5;
-      color: var(--accent);
-    }
-
-    .error-msg.visible { display: block; }
-
-    .error-msg .error-code {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .form-group {
+      background: rgba(180,50,50,.1);
+      border: 1px solid rgba(200,80,80,.2);
+      border-left: 3px solid var(--red);
+      border-radius: 6px;
+      padding: .75rem 1rem;
       margin-bottom: 1.5rem;
+      font-size: .78rem;
+      color: var(--red);
+      line-height: 1.5;
     }
+    .error-msg.visible { display: block; }
+    .error-code { font-size: .67rem; font-weight: 600; letter-spacing: .08em; margin-bottom: .2rem; opacity: .75; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1.25rem; }
 
     .form-group label {
       display: block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--cyan);
-      margin-bottom: 0.5rem;
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: .5rem;
     }
 
     .form-group input {
       width: 100%;
-      padding: 0.85rem 1rem;
-      background: var(--bg-input);
-      border: 1px solid var(--border-input);
+      padding: .82rem 1rem;
+      background: var(--glass-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       color: var(--text);
-      font-family: inherit;
-      font-size: 0.9rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: .9rem;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color .2s, box-shadow .2s;
     }
-
     .form-group input:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 0 1px rgba(0, 163, 224, 0.25);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,162,39,.1);
     }
+    .form-group input::placeholder { color: var(--text-dim); }
 
-    .form-group input::placeholder {
-      color: #3d4f63;
-    }
-
+    /* ── Button ── */
     .btn-login {
       width: 100%;
-      margin-top: 0.5rem;
-      padding: 1rem 1.25rem;
-      background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      font-family: inherit;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .btn-login::before {
-      content: '▶';
-      font-size: 0.55rem;
-    }
-
-    .btn-login:hover {
-      background: rgba(255, 69, 34, 0.08);
-    }
-
-    .btn-login:active {
-      transform: scale(0.99);
-    }
-
-    .btn-login:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .footer-rule {
+      margin-top: .5rem;
+      padding: .9rem;
+      background: var(--gold);
       border: none;
-      border-top: 1px solid #141c28;
-      margin: 2.5rem 0 1.25rem;
-    }
-
-    .footer-links {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .footer-links a {
-      color: var(--cyan);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .footer-links a:hover {
-      color: #33b8eb;
-    }
-
-    .demo-row {
-      margin-top: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .demo-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
+      border-radius: 8px;
+      color: #08060a;
+      font-family: 'Outfit', sans-serif;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .16em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.25rem;
-    }
-
-    .btn-demo {
-      width: 100%;
-      padding: 0.65rem 1rem;
-      background: transparent;
-      border: 1px solid #1a2838;
-      color: var(--muted);
-      font-family: inherit;
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
       cursor: pointer;
-      text-align: left;
-      transition: border-color 0.2s, color 0.2s;
+      transition: background .2s, box-shadow .2s, transform .1s;
+      box-shadow: 0 4px 28px rgba(201,162,39,.28);
     }
+    .btn-login:hover { background: var(--gold-bright); box-shadow: 0 4px 36px rgba(201,162,39,.38); }
+    .btn-login:active { transform: scale(.99); }
+    .btn-login:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-    .btn-demo:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
+    /* ── Footer ── */
+    .footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: .78rem;
+      font-weight: 300;
     }
+    .footer-link a { color: var(--text-muted); text-decoration: none; transition: color .2s; }
+    .footer-link a:hover { color: var(--gold); }
   </style>
 </head>
 <body>
 
-  <div class="login-shell">
-    <p class="protocol-label">Authentication Protocol</p>
+  <div class="login-wrap">
+    <div class="login-card">
 
-    <h1 class="title-block">
-      <span>Initiate</span>
-      <span>Session</span>
-    </h1>
+      <div class="brand">
+        <div class="brand-name">YAKU</div>
+        <div class="brand-rule"></div>
+        <div class="brand-sub">Accounting</div>
+      </div>
 
-    <p class="subtitle">Enter credentials to access secure client node.</p>
+      <div class="divider"></div>
 
-    <div class="error-msg" id="error-msg" role="alert">
-      <div class="error-code">// SYSTEM ERROR</div>
-      <div>Invalid credentials — access denied.</div>
+      <h1 class="card-heading">Secure Access</h1>
+      <p class="card-sub">Enter your credentials to continue</p>
+
+      <div class="error-msg" id="error-msg" role="alert">
+        <div class="error-code">Access Denied</div>
+        <div>Invalid credentials — please try again.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button type="button" class="btn-login" id="btn-login" onclick="attemptLogin()">Sign In</button>
+
+      <p class="footer-link"><a href="index.html">← Return to website</a></p>
+
     </div>
-
-    <div class="form-group">
-      <label for="email">[ Email address ]</label>
-      <input type="email" id="email" placeholder="admin@creativeafrica.co.za" autocomplete="email" />
-    </div>
-
-    <div class="form-group">
-      <label for="password">[ Password ]</label>
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-    </div>
-
-    <button type="button" class="btn-login" id="btn-login" onclick="attemptLogin()">Sign in to client portal</button>
-
-    <hr class="footer-rule" />
-
-    <p class="footer-links">
-      First access? <a href="index.html">Return to site →</a>
-    </p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -327,7 +301,7 @@
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
       btn.disabled = false;
-      btn.textContent = 'Sign in to client portal';
+      btn.textContent = 'Sign In';
 
       if (error) {
         showError('// SYSTEM ERROR', error.message);
