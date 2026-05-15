@@ -7,80 +7,339 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy: #1a2e4a; --blue: #2563eb; --gray-200: #e5e7eb;
-      --gray-400: #9ca3af; --gray-600: #4b5563; --gray-800: #1f2937;
-      --red: #dc2626; --red-light: #fef2f2; --white: #fff; --radius: 8px;
+      --navy: #1a2e4a;
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --panel-dark: #0f1419;
+      --panel-card: #1a222d;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-800: #1f2937;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --white: #fff;
+      --radius: 8px;
     }
+
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, var(--navy) 0%, #1e3a5f 100%);
-      min-height: 100vh; display: grid; place-items: center; padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      color: var(--gray-800);
     }
-    .card {
-      background: var(--white); border-radius: 16px;
-      padding: 2.5rem 2rem; width: 100%; max-width: 380px;
-      box-shadow: 0 25px 50px rgba(0,0,0,.35);
+
+    /* ── Left panel ── */
+    .panel-left {
+      flex: 1;
+      min-height: 100vh;
+      background: var(--panel-dark);
+      background-image: radial-gradient(ellipse 80% 60% at 50% 0%, #1e2d42 0%, var(--panel-dark) 70%);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      padding: 3rem 4rem;
     }
-    .logo { text-align: center; margin-bottom: 2rem; }
-    .logo-text { font-size: 1.3rem; font-weight: 800; color: var(--navy); }
-    .logo-text span { color: var(--blue); }
-    .logo-sub { font-size: .85rem; color: var(--gray-400); margin-top: .25rem; }
-    h1 { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin-bottom: .35rem; }
-    .subtitle { font-size: .88rem; color: var(--gray-600); margin-bottom: 1.75rem; }
-    .form-group { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
-    .form-group label { font-size: .82rem; font-weight: 600; color: var(--gray-800); }
-    .form-group input {
-      padding: .65rem .9rem; border: 1px solid var(--gray-200); border-radius: var(--radius);
-      font-size: .95rem; font-family: inherit; color: var(--gray-800); outline: none;
-      transition: border-color .2s;
+
+    .brand-logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 3rem;
     }
-    .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .brand-logo span { color: var(--blue-light); }
+    .brand-logo .tagline {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-top: 0.35rem;
+    }
+
+    .panel-hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 640px;
+    }
+
+    .panel-hero h1 {
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .panel-hero .lead {
+      font-size: 1rem;
+      color: #94a3b8;
+      line-height: 1.65;
+      max-width: 520px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--panel-card);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 1.25rem 1.35rem;
+    }
+
+    .feature-card .icon {
+      font-size: 1.35rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .feature-card h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .feature-card p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* ── Right panel ── */
+    .panel-right {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      padding: 3rem 2.5rem 2rem;
+    }
+
+    .signin-header h2 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--gray-800);
+      margin-bottom: 0.35rem;
+    }
+
+    .signin-header p {
+      font-size: 0.88rem;
+      color: var(--gray-500);
+      margin-bottom: 2rem;
+    }
+
     .error-msg {
-      background: var(--red-light); color: var(--red);
-      border: 1px solid #fecaca; border-radius: var(--radius);
-      padding: .6rem .85rem; font-size: .85rem; margin-bottom: 1rem; display: none;
+      background: var(--red-light);
+      color: var(--red);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 0.6rem 0.85rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
     }
     .error-msg.visible { display: block; }
-    .btn-login {
-      width: 100%; padding: .75rem; background: var(--blue); color: var(--white);
-      border: none; border-radius: var(--radius); font-size: .95rem;
-      font-weight: 700; cursor: pointer; transition: background .2s; margin-top: .25rem;
+
+    .form-group { margin-bottom: 0.85rem; }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--gray-800);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .btn-login:hover { background: #1d4ed8; }
-    .btn-login:active { transform: scale(.99); }
-    .back-link { text-align: center; margin-top: 1.5rem; font-size: .85rem; color: var(--gray-400); }
-    .back-link a { color: var(--blue); font-weight: 600; text-decoration: none; }
-    .back-link a:hover { text-decoration: underline; }
+
+    .form-group input:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(26, 46, 74, 0.08);
+    }
+
+    .form-group input::placeholder { color: var(--gray-400); }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.5rem;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-login:hover { background: #243a5c; }
+    .btn-login:active { transform: scale(0.99); }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--gray-200);
+      margin: 2rem 0 1.25rem;
+    }
+
+    .demo-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 0.75rem;
+    }
+
+    .btn-demo {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.5rem;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .btn-demo:hover {
+      border-color: var(--gray-400);
+      background: #f9fafb;
+    }
+
+    .btn-demo .demo-icon { font-size: 1rem; opacity: 0.85; }
+
+    .panel-footer {
+      margin-top: auto;
+      padding-top: 2rem;
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .panel-footer a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .panel-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .panel-left {
+        min-height: auto;
+        padding: 2.5rem 1.75rem;
+      }
+      .panel-right {
+        max-width: none;
+        min-height: auto;
+        padding: 2.5rem 1.75rem 2rem;
+      }
+      .feature-grid {
+        grid-template-columns: 1fr;
+        margin-top: 2rem;
+      }
+      .panel-hero { justify-content: flex-start; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">
-      <div class="logo-text">YAKU <span>Accounting</span></div>
-      <div class="logo-sub">Client Portal</div>
+
+  <aside class="panel-left">
+    <div class="brand-logo" aria-label="YAKU Accounting">
+      YAKU <span>Accounting</span>
+      <span class="tagline">Client Portal</span>
     </div>
 
-    <h1>Welcome back</h1>
-    <p class="subtitle">Sign in to access your client dashboard.</p>
+    <div class="panel-hero">
+      <h1>Your finances, organised and secure</h1>
+      <p class="lead">
+        Access tax documents, track deadlines, and stay connected with your dedicated accountant — all in one secure client dashboard.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon" aria-hidden="true">📁</div>
+          <h3>Secure Document Hub</h3>
+          <p>Upload and access tax returns, statements, and financial records anytime.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" aria-hidden="true">📊</div>
+          <h3>Financial Overview</h3>
+          <p>Dashboard snapshots of key metrics, cash flow, and account balances.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" aria-hidden="true">📅</div>
+          <h3>Deadline Tracker</h3>
+          <p>Never miss a filing date, payment deadline, or compliance milestone.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" aria-hidden="true">💬</div>
+          <h3>Direct Messaging</h3>
+          <p>Communicate with your account manager without leaving the portal.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="panel-right">
+    <div class="signin-header">
+      <h2>Sign In</h2>
+      <p>Access your YAKU Accounting client dashboard</p>
+    </div>
 
     <div class="error-msg" id="error-msg">Incorrect username or password. Please try again.</div>
 
     <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter your username" autocomplete="username" />
+      <input type="text" id="username" placeholder="Username" autocomplete="username" />
     </div>
     <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
     </div>
 
-    <button class="btn-login" onclick="attemptLogin()">Sign in</button>
+    <button class="btn-login" onclick="attemptLogin()">Sign In to Client Portal</button>
 
-    <div class="back-link"><a href="index.html">← Back to website</a></div>
-  </div>
+    <hr class="divider" />
+
+    <p class="demo-label">Demo — sign in as</p>
+    <button type="button" class="btn-demo" onclick="demoLogin('itsyaku')">
+      <span class="demo-icon" aria-hidden="true">👤</span>
+      Demo Client — Full portal access
+    </button>
+    <button type="button" class="btn-demo" onclick="demoLogin('viewer')">
+      <span class="demo-icon" aria-hidden="true">👁</span>
+      Viewer — Read-only access
+    </button>
+
+    <footer class="panel-footer">
+      YAKU Accounting — Client Portal v1.0<br />
+      <a href="index.html">← Back to website</a>
+    </footer>
+  </main>
 
   <script>
-    // Redirect if already logged in
     if (sessionStorage.getItem('summit_user')) location.replace('crm.html');
 
     const CREDENTIALS = { username: 'itsyaku', password: 'test123' };
@@ -97,6 +356,19 @@
         err.classList.add('visible');
         document.getElementById('password').value = '';
         document.getElementById('password').focus();
+      }
+    }
+
+    function demoLogin(role) {
+      document.getElementById('error-msg').classList.remove('visible');
+      if (role === 'itsyaku') {
+        document.getElementById('username').value = CREDENTIALS.username;
+        document.getElementById('password').value = CREDENTIALS.password;
+        attemptLogin();
+      } else {
+        document.getElementById('username').value = 'viewer';
+        document.getElementById('password').value = 'viewer';
+        attemptLogin();
       }
     }
 
