@@ -3,1127 +3,347 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAKU Accounting — Secure Access Terminal</title>
+  <title>YAKU Accounting — Client Portal Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --void:      #010109;
-      --deep:      #04040e;
-      --surface:   #070712;
-      --hal:       #e84020;
-      --hal-mid:   rgba(232, 64, 32, 0.35);
-      --hal-glow:  rgba(232, 64, 32, 0.12);
-      --hal-faint: rgba(232, 64, 32, 0.05);
-      --cyan:      #00cfff;
-      --cyan-mid:  rgba(0, 207, 255, 0.18);
-      --cyan-dim:  rgba(0, 207, 255, 0.07);
-      --cyan-line: rgba(0, 207, 255, 0.25);
-      --star:      rgba(200, 216, 240, 0.55);
-      --terminal:  #c8d8e8;
-      --ghost:     rgba(200, 216, 240, 0.45);
-      --mute:      rgba(200, 216, 240, 0.25);
-      --red-err:   #ff3030;
-      --green-ok:  #00ff88;
+      --bg: #05080f;
+      --bg-input: #0a1018;
+      --accent: #ff4522;
+      --cyan: #00a3e0;
+      --text: #ffffff;
+      --muted: #5a6478;
+      --border-input: #1a3a52;
     }
-
-    html, body { height: 100%; }
 
     body {
-      font-family: 'Space Mono', monospace;
-      background: var(--void);
-      color: var(--terminal);
-      display: flex;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      overflow: hidden;
-      cursor: crosshair;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
     }
 
-    /* CRT scanlines — full viewport overlay */
-    body::after {
+    body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0, 0, 0, 0.10) 3px,
-        rgba(0, 0, 0, 0.10) 4px
-      );
+      background-image: radial-gradient(circle, rgba(0, 163, 224, 0.12) 1px, transparent 1px);
+      background-size: 28px 28px;
       pointer-events: none;
-      z-index: 9999;
+      opacity: 0.35;
     }
 
-    /* ═══════════════════════════════
-       LEFT PANEL — THE HAL CHAMBER
-    ═══════════════════════════════ */
-
-    .panel-left {
-      flex: 1;
+    .login-shell {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 3.5rem;
-      overflow: hidden;
-      background: var(--void);
-      min-height: 100vh;
-    }
-
-    /* Star-field dot grid */
-    .panel-left::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(200,216,240,0.18) 1px, transparent 1px);
-      background-size: 36px 36px;
-      pointer-events: none;
-    }
-
-    /* Deep radial vignette */
-    .panel-left::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, var(--void) 100%);
-      pointer-events: none;
-    }
-
-    /* Horizontal scan beam */
-    .scan-beam {
-      position: absolute;
-      left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        var(--cyan-dim) 15%,
-        var(--cyan-line) 45%,
-        var(--cyan) 50%,
-        var(--cyan-line) 55%,
-        var(--cyan-dim) 85%,
-        transparent 100%
-      );
-      animation: scanBeam 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    @keyframes scanBeam {
-      0%   { top: -2px; opacity: 0; }
-      3%   { opacity: 1; }
-      97%  { opacity: 0.6; }
-      100% { top: 100%; opacity: 0; }
-    }
-
-    /* ── HAL Eye ── */
-    .hal-wrap {
-      position: relative;
-      z-index: 4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-    }
-
-    .hal {
-      position: relative;
-      width: 220px;
-      height: 220px;
-    }
-
-    /* Outermost slow ring */
-    .hal-r1 {
-      position: absolute;
-      inset: 0;
-      border: 1px solid rgba(232, 64, 32, 0.18);
-      border-radius: 50%;
-      animation: spin1 28s linear infinite;
-    }
-    .hal-r1::before {
-      content: '';
-      position: absolute;
-      top: -5px; left: calc(50% - 4px);
-      width: 8px; height: 8px;
-      background: var(--hal);
-      border-radius: 50%;
-      box-shadow: 0 0 10px var(--hal), 0 0 22px var(--hal);
-    }
-    .hal-r1::after {
-      content: '';
-      position: absolute;
-      bottom: -5px; left: calc(50% - 3px);
-      width: 6px; height: 6px;
-      background: rgba(232, 64, 32, 0.5);
-      border-radius: 50%;
-    }
-
-    /* Middle ring */
-    .hal-r2 {
-      position: absolute;
-      inset: 26px;
-      border: 1px solid rgba(232, 64, 32, 0.32);
-      border-radius: 50%;
-      animation: spin2 16s linear infinite reverse;
-    }
-    .hal-r2::before {
-      content: '';
-      position: absolute;
-      top: -4px; right: -4px;
-      width: 7px; height: 7px;
-      background: rgba(232, 64, 32, 0.7);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--hal);
-    }
-
-    /* Inner ring */
-    .hal-r3 {
-      position: absolute;
-      inset: 54px;
-      border: 1px solid rgba(232, 64, 32, 0.55);
-      border-radius: 50%;
-      animation: spin1 10s linear infinite;
-    }
-
-    /* Innermost static ring */
-    .hal-r4 {
-      position: absolute;
-      inset: 76px;
-      border: 1px solid rgba(232, 64, 32, 0.7);
-      border-radius: 50%;
-    }
-
-    /* The eye core */
-    .hal-core {
-      position: absolute;
-      inset: 90px;
-      border-radius: 50%;
-      background: radial-gradient(circle,
-        #ffffff 0%,
-        #ffcfa0 10%,
-        #ff7040 30%,
-        var(--hal) 55%,
-        #8b1800 78%,
-        #200400 100%
-      );
-      animation: halPulse 4s ease-in-out infinite;
-      box-shadow:
-        0 0 18px 4px rgba(232, 64, 32, 0.9),
-        0 0 40px 8px rgba(232, 64, 32, 0.5),
-        0 0 80px 16px rgba(232, 64, 32, 0.25),
-        0 0 140px 30px rgba(232, 64, 32, 0.1);
-    }
-
-    /* Ambient HAL glow behind eye */
-    .hal-ambient {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 340px; height: 340px;
-      background: radial-gradient(circle,
-        rgba(232, 64, 32, 0.14) 0%,
-        rgba(232, 64, 32, 0.05) 45%,
-        transparent 70%
-      );
-      border-radius: 50%;
-      pointer-events: none;
-      animation: halPulse 4s ease-in-out infinite;
-    }
-
-    @keyframes spin1  { to { transform: rotate(360deg); } }
-    @keyframes spin2  { to { transform: rotate(360deg); } }
-    @keyframes halPulse {
-      0%, 100% { opacity: 0.85; }
-      50%       { opacity: 1; }
-    }
-
-    /* ── Center group: logo + orb together ── */
-    .center-group {
-      position: relative;
-      z-index: 4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.75rem;
-    }
-
-    /* ── Brand ── */
-    .brand {
-      position: relative;
-      z-index: 4;
       width: 100%;
-      text-align: center;
+      max-width: 480px;
     }
 
-    .brand-name {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      font-size: 2.8rem;
-      letter-spacing: 0.22em;
-      color: #fff;
-      text-shadow:
-        0 0 20px rgba(232, 64, 32, 0.4),
-        0 0 60px rgba(232, 64, 32, 0.15);
-      line-height: 1;
-      margin-bottom: 0.35rem;
-    }
-
-    .brand-sub {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.35em;
-      color: var(--cyan);
-      text-transform: uppercase;
-      opacity: 0.7;
-    }
-
-    /* ── System readout ── */
-    .sys-readout {
-      position: absolute;
-      bottom: 3rem;
-      left: 3.5rem;
-      right: 3.5rem;
-      z-index: 4;
-      border-top: 1px solid rgba(0, 207, 255, 0.1);
-      padding-top: 1.25rem;
-    }
-
-    .sys-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.3rem 0;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-    }
-
-    .sys-key {
-      color: var(--mute);
-      text-transform: uppercase;
-    }
-
-    .sys-val {
-      color: var(--cyan);
-      opacity: 0.75;
-      font-size: 0.58rem;
-    }
-
-    .sys-status {
+    .protocol-label {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .status-dot {
-      width: 6px; height: 6px;
-      background: var(--green-ok);
-      border-radius: 50%;
-      box-shadow: 0 0 6px var(--green-ok);
-      animation: blink 2.4s ease-in-out infinite;
-    }
-
-    .status-text {
-      font-size: 0.58rem;
-      letter-spacing: 0.2em;
-      color: var(--green-ok);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.3; }
-    }
-
-    /* ── Left panel entry animations ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .brand      { animation: fadeUp 1s 0.2s ease both; }
-    .hal-wrap   { animation: fadeUp 1s 0.4s ease both; }
-    .sys-readout{ animation: fadeUp 1s 0.6s ease both; }
-
-    /* ═══════════════════════════════
-       RIGHT PANEL — ACCESS TERMINAL
-    ═══════════════════════════════ */
-
-    .panel-right {
-      width: 480px;
-      flex-shrink: 0;
-      background: var(--deep);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      position: relative;
-      overflow-y: auto;
-      border-left: 1px solid rgba(0, 207, 255, 0.08);
-    }
-
-    /* Cyan top accent line */
-    .panel-right::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, var(--cyan) 40%, var(--cyan) 60%, transparent 100%);
-      opacity: 0.5;
-      z-index: 5;
-    }
-
-    /* Subtle circuit / dot grid */
-    .panel-right::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(0,207,255,0.06) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-    }
-
-    /* Right panel slide-in */
-    @keyframes fromRight {
-      from { opacity: 0; transform: translateX(30px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    .panel-right { animation: fromRight 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-    /* Terminal header bar */
-    .term-bar {
-      position: relative;
-      z-index: 2;
-      padding: 1.25rem 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(0, 207, 255, 0.06);
-    }
-
-    .term-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .term-dot {
-      width: 9px; height: 9px;
-      border-radius: 50%;
-    }
-
-    .term-dot:nth-child(1) { background: rgba(232, 64, 32, 0.7); box-shadow: 0 0 4px var(--hal); }
-    .term-dot:nth-child(2) { background: rgba(255, 180, 0, 0.5); }
-    .term-dot:nth-child(3) { background: rgba(0, 207, 255, 0.4); }
-
-    .term-id {
-      font-size: 0.58rem;
-      letter-spacing: 0.2em;
-      color: var(--mute);
-      text-transform: uppercase;
-    }
-
-    .term-back {
-      font-size: 0.58rem;
-      letter-spacing: 0.14em;
-      color: var(--mute);
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .term-back:hover { color: var(--cyan); }
-
-    /* Form area */
-    .form-area {
-      position: relative;
-      z-index: 2;
-      flex: 1;
-      padding: 2.5rem 2.5rem 2rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    /* ── Views ── */
-    .view {
-      display: flex;
-      flex-direction: column;
-      animation: viewIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-    .view.hidden { display: none; }
-
-    @keyframes viewIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Header */
-    .v-protocol {
-      font-size: 0.58rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--hal);
-      margin-bottom: 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .v-protocol::before {
-      content: '▶';
-      font-size: 0.5rem;
-      color: var(--hal);
-    }
-
-    .v-title {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: 1.9rem;
-      letter-spacing: 0.08em;
-      color: #fff;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 30px rgba(0,207,255,0.2);
-    }
-
-    .v-sub {
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      color: var(--ghost);
-      line-height: 1.6;
-      margin-bottom: 2.25rem;
-    }
-
-    /* ── Alerts ── */
-    .alert-msg {
-      display: none;
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      line-height: 1.55;
-      padding: 0.65rem 0.9rem;
+      color: var(--accent);
       margin-bottom: 1.25rem;
-      border-left: 2px solid;
-      background: rgba(0,0,0,0.3);
     }
-    .alert-msg.visible { display: block; }
-    .alert-msg.error   {
-      color: var(--red-err);
-      border-left-color: var(--red-err);
-      box-shadow: inset 4px 0 20px rgba(255, 48, 48, 0.05);
-    }
-    .alert-msg.success {
-      color: var(--green-ok);
-      border-left-color: var(--green-ok);
-      box-shadow: inset 4px 0 20px rgba(0, 255, 136, 0.05);
-    }
-    .alert-msg::before {
-      display: block;
+
+    .protocol-label::before {
+      content: '▶';
       font-size: 0.55rem;
-      letter-spacing: 0.22em;
+    }
+
+    .title-block {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.5rem, 8vw, 3.75rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
-      margin-bottom: 0.3rem;
-      opacity: 0.65;
-    }
-    .alert-msg.error::before   { content: '// SYSTEM ERROR'; }
-    .alert-msg.success::before { content: '// SYSTEM MESSAGE'; }
-
-    /* ── Fields ── */
-    .field {
-      margin-bottom: 1.5rem;
-      position: relative;
+      margin-bottom: 1rem;
     }
 
-    .field label {
+    .title-block span {
       display: block;
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--cyan);
-      opacity: 0.7;
-      margin-bottom: 0.55rem;
     }
 
-    .field label::before { content: '[ '; }
-    .field label::after  { content: ' ]'; }
-
-    .field input {
-      width: 100%;
-      background: rgba(0, 207, 255, 0.04);
-      border: 1px solid rgba(0, 207, 255, 0.14);
-      border-radius: 0;
-      padding: 0.7rem 1rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.82rem;
-      color: var(--terminal);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-      letter-spacing: 0.05em;
-      -webkit-appearance: none;
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.5;
     }
 
-    .field input::placeholder {
-      color: rgba(200, 216, 240, 0.2);
+    .error-msg {
+      display: none;
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.75rem;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: var(--accent);
+    }
+
+    .error-msg.visible { display: block; }
+
+    .error-msg .error-code {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
       letter-spacing: 0.08em;
+      color: var(--cyan);
+      margin-bottom: 0.5rem;
     }
 
-    .field input:focus {
+    .form-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
       border-color: var(--cyan);
-      background: rgba(0, 207, 255, 0.07);
-      box-shadow:
-        0 0 0 1px rgba(0, 207, 255, 0.12),
-        inset 0 0 24px rgba(0, 207, 255, 0.04),
-        0 0 20px rgba(0, 207, 255, 0.06);
+      box-shadow: 0 0 0 1px rgba(0, 163, 224, 0.25);
     }
 
-    .field input:disabled { opacity: 0.35; cursor: not-allowed; }
+    .form-group input::placeholder {
+      color: #3d4f63;
+    }
 
-    .req { color: var(--hal); margin-left: 2px; }
-
-    /* ── Submit button ── */
-    .btn-submit {
+    .btn-login {
       width: 100%;
       margin-top: 0.5rem;
-      padding: 0.9rem 1.5rem;
+      padding: 1rem 1.25rem;
       background: transparent;
-      border: 1px solid var(--hal);
-      color: var(--hal);
-      font-family: 'Space Mono', monospace;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.22em;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      cursor: crosshair;
-      position: relative;
-      overflow: hidden;
-      transition: color 0.35s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.2s, color 0.2s;
     }
 
-    .btn-submit::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--hal);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    .btn-login::before {
+      content: '▶';
+      font-size: 0.55rem;
     }
 
-    .btn-submit::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
-      transform: translateX(-100%);
-      transition: transform 0.6s ease;
+    .btn-login:hover {
+      background: rgba(255, 69, 34, 0.08);
     }
 
-    .btn-submit span { position: relative; z-index: 1; }
+    .btn-login:active {
+      transform: scale(0.99);
+    }
 
-    .btn-submit:hover { color: var(--void); }
-    .btn-submit:hover::before { transform: scaleX(1); }
-    .btn-submit:hover::after  { transform: translateX(100%); }
-
-    .btn-submit:disabled {
-      opacity: 0.4;
+    .btn-login:disabled {
+      opacity: 0.55;
       cursor: not-allowed;
     }
-    .btn-submit:disabled::before,
-    .btn-submit:disabled::after { display: none; }
 
-    /* ── Divider ── */
-    .split-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin: 1.75rem 0 1.5rem;
-    }
-    .split-row::before,
-    .split-row::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(0, 207, 255, 0.1);
-    }
-    .split-row span {
-      font-size: 0.58rem;
-      letter-spacing: 0.2em;
-      color: var(--mute);
-      text-transform: uppercase;
+    .footer-rule {
+      border: none;
+      border-top: 1px solid #141c28;
+      margin: 2.5rem 0 1.25rem;
     }
 
-    /* ── Switch link ── */
-    .switch-text {
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      color: var(--mute);
+    .footer-links {
       text-align: center;
-      line-height: 1.6;
+      font-size: 0.78rem;
+      color: var(--muted);
     }
 
-    .switch-text a {
+    .footer-links a {
       color: var(--cyan);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(0, 207, 255, 0.25);
-      padding-bottom: 1px;
-      transition: border-color 0.2s, text-shadow 0.2s;
-    }
-    .switch-text a:hover {
-      border-bottom-color: var(--cyan);
-      text-shadow: 0 0 12px var(--cyan);
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
-    /* ── Onboarding ── */
-    .onboard-tag {
-      font-size: 0.58rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--green-ok);
+    .footer-links a:hover {
+      color: #33b8eb;
+    }
+
+    .demo-row {
+      margin-top: 1.5rem;
       display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      margin-bottom: 0.6rem;
-    }
-    .onboard-tag::before { content: '▶'; font-size: 0.45rem; }
-
-    .section-row {
-      display: flex;
-      align-items: center;
-      gap: 0.9rem;
-      margin: 0.5rem 0 1.5rem;
-    }
-    .section-row span {
-      font-size: 0.58rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--mute);
-      white-space: nowrap;
-    }
-    .section-row::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(0, 207, 255, 0.1);
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
-    /* ── Terminal footer ── */
-    .term-footer {
-      position: relative;
-      z-index: 2;
-      padding: 1rem 2.5rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid rgba(0, 207, 255, 0.06);
-    }
-
-    .term-footer-text {
-      font-size: 0.58rem;
+    .demo-label {
+      font-size: 0.65rem;
       letter-spacing: 0.1em;
-      color: var(--mute);
       text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
     }
 
-    .term-footer-enc {
-      font-size: 0.55rem;
-      letter-spacing: 0.12em;
-      color: rgba(0, 207, 255, 0.35);
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .term-footer-enc::before {
-      content: '';
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--green-ok);
-      box-shadow: 0 0 5px var(--green-ok);
-      animation: blink 2.4s ease-in-out infinite;
+    .btn-demo {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      background: transparent;
+      border: 1px solid #1a2838;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, color 0.2s;
     }
 
-    /* ═══════════════════════════════
-       RESPONSIVE
-    ═══════════════════════════════ */
-    @media (max-width: 900px) {
-      body { flex-direction: column; overflow: auto; }
-
-      .panel-left {
-        min-height: auto;
-        padding: 2rem 2rem 2.5rem;
-      }
-
-      .hal { width: 150px; height: 150px; }
-      .hal-ambient { width: 240px; height: 240px; }
-      .hal-r2 { inset: 18px; }
-      .hal-r3 { inset: 36px; }
-      .hal-r4 { inset: 52px; }
-      .hal-core { inset: 62px; }
-
-      .brand-name { font-size: 2rem; }
-      .sys-readout { display: none; }
-
-      .panel-right { width: 100%; }
-      .form-area   { padding: 2rem 1.75rem; }
-      .term-bar    { padding: 1rem 1.75rem; }
-      .term-footer { padding: 1rem 1.75rem 1.5rem; }
+    .btn-demo:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
     }
   </style>
 </head>
 <body>
 
-  <!-- ════════════════════════════════
-       LEFT PANEL — HAL CHAMBER
-  ════════════════════════════════ -->
-  <aside class="panel-left" aria-label="YAKU Accounting — Visual panel">
+  <div class="login-shell">
+    <p class="protocol-label">Authentication Protocol</p>
 
-    <div class="scan-beam" aria-hidden="true"></div>
+    <h1 class="title-block">
+      <span>Initiate</span>
+      <span>Session</span>
+    </h1>
 
-    <!-- Brand + HAL Eye grouped together -->
-    <div class="center-group">
-      <div class="brand">
-        <div class="brand-name">YAKU</div>
-        <div class="brand-sub">Accounting Systems</div>
-      </div>
+    <p class="subtitle">Enter credentials to access secure client node.</p>
 
-      <div class="hal-wrap" aria-hidden="true">
-      <div class="hal-ambient"></div>
-      <div class="hal">
-        <div class="hal-r1"></div>
-        <div class="hal-r2"></div>
-        <div class="hal-r3"></div>
-        <div class="hal-r4"></div>
-        <div class="hal-core"></div>
-      </div>
-    </div>
-    </div><!-- /center-group -->
-
-    <!-- System readout -->
-    <div class="sys-readout" aria-hidden="true">
-      <div class="sys-status">
-        <span class="status-dot"></span>
-        <span class="status-text">All systems nominal</span>
-      </div>
-      <div class="sys-row">
-        <span class="sys-key">Node</span>
-        <span class="sys-val">ZA-CPT-001 / JOHANNESBURG</span>
-      </div>
-      <div class="sys-row">
-        <span class="sys-key">Coords</span>
-        <span class="sys-val">-26.2041° S  28.0473° E</span>
-      </div>
-      <div class="sys-row">
-        <span class="sys-key">Protocol</span>
-        <span class="sys-val">AES-256 · TLS 1.3 · SUPABASE</span>
-      </div>
-      <div class="sys-row">
-        <span class="sys-key">Access</span>
-        <span class="sys-val">CLIENT TIER · AUTHENTICATED</span>
-      </div>
+    <div class="error-msg" id="error-msg" role="alert">
+      <div class="error-code">// SYSTEM ERROR</div>
+      <div>Invalid credentials — access denied.</div>
     </div>
 
-  </aside>
-
-  <!-- ════════════════════════════════
-       RIGHT PANEL — ACCESS TERMINAL
-  ════════════════════════════════ -->
-  <main class="panel-right">
-
-    <!-- Terminal title bar -->
-    <div class="term-bar">
-      <div class="term-dots" aria-hidden="true">
-        <span class="term-dot"></span>
-        <span class="term-dot"></span>
-        <span class="term-dot"></span>
-      </div>
-      <span class="term-id">TERMINAL · v9.1.0</span>
-      <a href="index.html" class="term-back">
-        ← EXIT
-      </a>
+    <div class="form-group">
+      <label for="email">[ Email address ]</label>
+      <input type="email" id="email" placeholder="admin@creativeafrica.co.za" autocomplete="email" />
     </div>
 
-    <div class="form-area">
+    <div class="form-group">
+      <label for="password">[ Password ]</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
 
-      <!-- ── VIEW: SIGN IN ── -->
-      <div class="view" id="view-signin">
-        <p class="v-protocol">Authentication Protocol</p>
-        <h2 class="v-title">INITIATE<br />SESSION</h2>
-        <p class="v-sub">Enter credentials to access secure client node.</p>
+    <button type="button" class="btn-login" id="btn-login" onclick="attemptLogin()">Sign in to client portal</button>
 
-        <div class="alert-msg error"   id="signin-error"></div>
-        <div class="alert-msg success" id="signin-success"></div>
+    <hr class="footer-rule" />
 
-        <div class="field">
-          <label for="signin-email">Email address</label>
-          <input type="email" id="signin-email" placeholder="operator@domain.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="signin-password">Password</label>
-          <input type="password" id="signin-password" placeholder="••••••••••••" autocomplete="current-password" />
-        </div>
-
-        <button class="btn-submit" id="btn-signin" data-label="Sign In to Client Portal">
-          <span>▶ &nbsp;Initiate Session</span>
-        </button>
-
-        <div class="split-row"><span>——</span></div>
-
-        <p class="switch-text">
-          First access?&nbsp; <a href="#" id="go-register">Register node →</a>
-        </p>
-      </div>
-
-      <!-- ── VIEW: REGISTER ── -->
-      <div class="view hidden" id="view-register">
-        <p class="v-protocol">New Node Registration</p>
-        <h2 class="v-title">REGISTER<br />ACCESS</h2>
-        <p class="v-sub">Establish secure credentials for client node entry.</p>
-
-        <div class="alert-msg error" id="register-error"></div>
-
-        <div class="field">
-          <label for="reg-email">Email address</label>
-          <input type="email" id="reg-email" placeholder="operator@domain.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="reg-password">Password</label>
-          <input type="password" id="reg-password" placeholder="Min. 8 characters" autocomplete="new-password" />
-        </div>
-        <div class="field">
-          <label for="reg-confirm">Confirm password</label>
-          <input type="password" id="reg-confirm" placeholder="Confirm passphrase" autocomplete="new-password" />
-        </div>
-
-        <button class="btn-submit" id="btn-register" data-label="Create Account">
-          <span>▶ &nbsp;Create Account</span>
-        </button>
-
-        <div class="split-row"><span>——</span></div>
-
-        <p class="switch-text">
-          Node exists?&nbsp; <a href="#" id="go-signin">← Sign in</a>
-        </p>
-      </div>
-
-      <!-- ── VIEW: ONBOARDING ── -->
-      <div class="view hidden" id="view-onboarding">
-        <p class="onboard-tag">Node Initialisation</p>
-        <h2 class="v-title">OPERATOR<br />PROFILE</h2>
-        <p class="v-sub">Transmit identification data to complete node setup.</p>
-
-        <div class="alert-msg error" id="onboard-error"></div>
-
-        <div class="section-row"><span>Identification</span></div>
-
-        <div class="field">
-          <label for="onboard-name">Full name <span class="req">*</span></label>
-          <input type="text" id="onboard-name" placeholder="Full operator name" autocomplete="name" />
-        </div>
-        <div class="field">
-          <label for="onboard-company">Entity name</label>
-          <input type="text" id="onboard-company" placeholder="Smith Holdings (Pty) Ltd" autocomplete="organization" />
-        </div>
-        <div class="field">
-          <label for="onboard-phone">Comms channel</label>
-          <input type="tel" id="onboard-phone" placeholder="+27 82 000 0000" autocomplete="tel" />
-        </div>
-
-        <button class="btn-submit" id="btn-onboard" data-label="Complete Setup & Enter Portal">
-          <span>▶ &nbsp;Complete Setup &amp; Enter Portal</span>
-        </button>
-      </div>
-
-    </div><!-- /form-area -->
-
-    <footer class="term-footer">
-      <span class="term-footer-text">© 2026 YAKU Accounting</span>
-      <span class="term-footer-enc">AES-256 Encrypted</span>
-    </footer>
-
-  </main>
+    <p class="footer-links">
+      First access? <a href="index.html">Return to site →</a>
+    </p>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPA_URL = 'https://jlcjdhzdcuwwibqmyfcy.supabase.co';
-    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k';
-    const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+    const sb = supabase.createClient(
+      'https://jlcjdhzdcuwwibqmyfcy.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2pkaHpkY3V3d2licW15ZmN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MDM1MDYsImV4cCI6MjA5NDM3OTUwNn0.iNuq_4HO9xlQeUw0fw8lRkSU1b-FrPeZqJzTNzw_y1k'
+    );
 
-    // ── Utilities ─────────────────────────────────────────────────────────────
+    const errEl = document.getElementById('error-msg');
+    const errDetail = errEl.children[1];
+    const btn = document.getElementById('btn-login');
 
-    function showView(name) {
-      ['signin', 'register', 'onboarding'].forEach(v => {
-        document.getElementById('view-' + v).classList.toggle('hidden', v !== name);
-      });
+    function showError(title, message) {
+      errEl.querySelector('.error-code').textContent = title;
+      errDetail.textContent = message;
+      errEl.classList.add('visible');
     }
 
-    function setAlert(id, msg, type) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.className = 'alert-msg ' + (type || 'error') + ' visible';
+    function hideError() {
+      errEl.classList.remove('visible');
     }
 
-    function clearAlerts() {
-      Array.from(arguments).forEach(function(id) {
-        const el = document.getElementById(id);
-        el.textContent = '';
-        el.classList.remove('visible');
-      });
-    }
-
-    function setLoading(btnId, loading) {
-      const btn = document.getElementById(btnId);
-      btn.disabled = loading;
-      const span = btn.querySelector('span');
-      if (span) span.textContent = loading ? '// Processing…' : ('▶  ' + btn.dataset.label);
-    }
-
-    // ── Auth helpers ──────────────────────────────────────────────────────────
-
-    async function checkOnboarding(user) {
-      const { data: profile } = await sb
+    async function redirectForSession(session) {
+      const { data: profile, error } = await sb
         .from('profiles')
-        .select('onboarding_complete, role')
-        .eq('id', user.id)
+        .select('role')
+        .eq('id', session.user.id)
         .single();
-      if (profile && profile.onboarding_complete) {
-        location.replace(profile.role === 'client' ? 'client-portal.html' : 'crm.html');
-      } else {
-        showView('onboarding');
+
+      if (error || !profile) {
+        await sb.auth.signOut();
+        showError('// SYSTEM ERROR', error?.message || 'No profile found for this account.');
+        return;
       }
+
+      if (profile.role === 'admin') location.replace('crm.html');
+      else if (profile.role === 'client') location.replace('client-portal.html');
+      else showError('// ACCESS DENIED', 'Your account does not have portal access.');
     }
 
-    // ── Init: check for an existing session on page load ──────────────────────
-
-    (async function init() {
+    (async function checkExistingSession() {
       const { data: { session } } = await sb.auth.getSession();
-      if (session) { await checkOnboarding(session.user); return; }
-
-      sb.auth.onAuthStateChange(async function(event, session) {
-        if (event === 'SIGNED_IN' && session) await checkOnboarding(session.user);
-      });
-
-      document.getElementById('signin-email').focus();
+      if (session) await redirectForSession(session);
     }());
 
-    // ── Navigation ────────────────────────────────────────────────────────────
+    async function attemptLogin() {
+      hideError();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
-    document.getElementById('go-register').addEventListener('click', function(e) {
-      e.preventDefault();
-      clearAlerts('signin-error', 'signin-success');
-      showView('register');
-      document.getElementById('reg-email').focus();
-    });
-
-    document.getElementById('go-signin').addEventListener('click', function(e) {
-      e.preventDefault();
-      clearAlerts('register-error');
-      showView('signin');
-      document.getElementById('signin-email').focus();
-    });
-
-    // ── Sign In ───────────────────────────────────────────────────────────────
-
-    async function doSignIn() {
-      clearAlerts('signin-error', 'signin-success');
-      const email    = document.getElementById('signin-email').value.trim();
-      const password = document.getElementById('signin-password').value;
       if (!email || !password) {
-        setAlert('signin-error', 'Please enter your email and password.');
+        showError('// VALIDATION ERROR', 'Email and password are required.');
         return;
       }
-      setLoading('btn-signin', true);
+
+      btn.disabled = true;
+      btn.textContent = 'Authenticating…';
+
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      setLoading('btn-signin', false);
-      if (error) { setAlert('signin-error', error.message); return; }
-      await checkOnboarding(data.user);
+
+      btn.disabled = false;
+      btn.textContent = 'Sign in to client portal';
+
+      if (error) {
+        showError('// SYSTEM ERROR', error.message);
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+        return;
+      }
+
+      await redirectForSession(data.session);
     }
 
-    document.getElementById('btn-signin').addEventListener('click', doSignIn);
-    document.getElementById('signin-password').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') doSignIn();
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') attemptLogin();
     });
 
-    // ── Register ──────────────────────────────────────────────────────────────
-
-    async function doRegister() {
-      clearAlerts('register-error');
-      const email    = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const confirm  = document.getElementById('reg-confirm').value;
-      if (!email || !password || !confirm) {
-        setAlert('register-error', 'Please fill in all fields.');
-        return;
-      }
-      if (password.length < 8) {
-        setAlert('register-error', 'Password must be at least 8 characters.');
-        return;
-      }
-      if (password !== confirm) {
-        setAlert('register-error', 'Passwords do not match.');
-        return;
-      }
-      setLoading('btn-register', true);
-      const { data, error } = await sb.auth.signUp({ email, password });
-      setLoading('btn-register', false);
-      if (error) { setAlert('register-error', error.message); return; }
-
-      if (data.session) {
-        showView('onboarding');
-        document.getElementById('onboard-name').focus();
-      } else {
-        showView('signin');
-        setAlert(
-          'signin-success',
-          'Node registered. Check your email to confirm, then sign in.',
-          'success'
-        );
-      }
-    }
-
-    document.getElementById('btn-register').addEventListener('click', doRegister);
-    document.getElementById('reg-confirm').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') doRegister();
-    });
-
-    // ── Onboarding ────────────────────────────────────────────────────────────
-
-    document.getElementById('btn-onboard').addEventListener('click', async function() {
-      clearAlerts('onboard-error');
-      const fullName = document.getElementById('onboard-name').value.trim();
-      const company  = document.getElementById('onboard-company').value.trim();
-      const phone    = document.getElementById('onboard-phone').value.trim();
-
-      if (!fullName) {
-        setAlert('onboard-error', 'Operator name is required.');
-        document.getElementById('onboard-name').focus();
-        return;
-      }
-
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
-        setAlert('onboard-error', 'Session expired. Please sign in again.');
-        showView('signin');
-        return;
-      }
-
-      setLoading('btn-onboard', true);
-      const { error } = await sb.from('profiles').upsert({
-        id:                  user.id,
-        role:                'client',
-        full_name:           fullName,
-        company_name:        company  || null,
-        phone:               phone    || null,
-        onboarding_complete: true,
-      });
-      setLoading('btn-onboard', false);
-
-      if (error) { setAlert('onboard-error', error.message); return; }
-      location.replace('client-portal.html');
-    });
+    document.getElementById('email').focus();
   </script>
 </body>
 </html>
